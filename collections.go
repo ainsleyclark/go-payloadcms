@@ -3,10 +3,10 @@ package payloadcms
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/goccy/go-json"
 	"github.com/google/go-querystring/query"
 )
 
