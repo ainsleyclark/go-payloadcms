@@ -26,7 +26,7 @@ export default buildConfig({
 
 	db: postgresAdapter({
 		pool: {
-			url: process.env.DATABASE_URI,
+			connectionString: process.env.DATABASE_URI,
 		}
 	}),
 });

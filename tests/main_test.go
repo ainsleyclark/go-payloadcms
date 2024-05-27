@@ -20,6 +20,7 @@ import (
 // For example
 
 var db *sql.DB
+var postgresR *dockertest.Resource
 
 func TestMain(m *testing.M) {
 	var err error
@@ -57,20 +58,20 @@ func startPostgresDB(pool *dockertest.Pool, network *dockertest.Network) (*docke
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "postgres",
 		Name:       "postgres",
-		Tag:        "11",
+		Tag:        "13",
+		Networks:   []*dockertest.Network{network},
 		Env: []string{
 			"POSTGRES_PASSWORD=secret",
-			"POSTGRES_USER=user_name",
+			"POSTGRES_USER=user",
 			"POSTGRES_DB=payload",
 			"listen_addresses = '*'",
 		},
-		Networks: []*dockertest.Network{network},
 	}, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{
-			Name: "no",
-		}
+		//config.AutoRemove = true
+		//config.RestartPolicy = docker.RestartPolicy{
+		//	Name: "no",
+		//}
 	})
 	if err != nil {
 		fmt.Printf("Could not start Mongodb: %v \n", err)
@@ -78,7 +79,7 @@ func startPostgresDB(pool *dockertest.Pool, network *dockertest.Network) (*docke
 	}
 
 	hostAndPort := resource.GetHostPort("5432/tcp")
-	databaseUrl := fmt.Sprintf("postgres://user_name:secret@%s/payload?sslmode=disable", hostAndPort)
+	databaseUrl := fmt.Sprintf("postgres://user:secret@%s/payload?sslmode=disable", hostAndPort)
 
 	log.Println("Connecting to database on url: ", databaseUrl)
 
@@ -93,18 +94,27 @@ func startPostgresDB(pool *dockertest.Pool, network *dockertest.Network) (*docke
 		return resource, "", err
 	}
 
+	postgresR = resource
+
 	return resource, databaseUrl, nil
 }
 
+// CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS          PORTS                     NAMES
+//1a1e69ed5a2a   postgres:13   "docker-entrypoint.s…"   42 seconds ago   Up 41 seconds   0.0.0.0:32830->5432/tcp   postgres
+
 func startPayloadCMS(pool *dockertest.Pool, network *dockertest.Network, dbURL string) (*dockertest.Resource, error) {
 	fmt.Println("Starting Payload CMS")
+
+	fmt.Println()
 
 	resource, err := pool.BuildAndRunWithOptions("../dev/Dockerfile", &dockertest.RunOptions{
 		Hostname: "payload",
 		Name:     "payload",
 		Networks: []*dockertest.Network{network},
 		Env: []string{
-			"DATABASE_URI=" + dbURL,
+			"DATABASE_URI=" + fmt.Sprintf("postgres://user:secret@%s:5432/payload?sslmode=disable",
+				postgresR.GetIPInNetwork(network),
+			),
 			"PAYLOAD_SECRET=secret",
 		},
 	})
@@ -116,8 +126,9 @@ func startPayloadCMS(pool *dockertest.Pool, network *dockertest.Network, dbURL s
 	fmt.Printf("Moving to retry: " + "http://localhost:" + resource.GetPort("3000/tcp") + "/admin")
 
 	if err := pool.Retry(func() error {
-		url := "http://localhost:" + resource.GetPort("3000/tcp") + "/admin"
-		post, err := http.DefaultClient.Post(url, "application/json", nil)
+		url := resource.GetHostPort("3000/tcp") + "/admin"
+		fmt.Println(url)
+		post, err := http.DefaultClient.Get(url)
 		if err != nil {
 			return err
 		}
@@ -136,6 +147,8 @@ func startPayloadCMS(pool *dockertest.Pool, network *dockertest.Network, dbURL s
 
 	return resource, nil
 }
+
+//2024-05-27 21:30:42 [20:30:42] ERROR (payload): error: relation "users" does not exist
 
 func cleanUp(code int, pool *dockertest.Pool, network *dockertest.Network, resources ...*dockertest.Resource) {
 	cleanUpResources(pool, resources)
