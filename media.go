@@ -18,6 +18,7 @@ import (
 )
 
 // MediaService is an interface for uploading media to the Payload API.
+// Experimental feature.
 //
 // See: https://payloadcms.com/docs/upload/overview
 type MediaService interface {
