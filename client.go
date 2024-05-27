@@ -119,8 +119,8 @@ func (c *Client) Do(ctx context.Context, method, path string, body any, v any) (
 		return Response{}, err
 	}
 
-	url := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
-	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(buf))
+	uri := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
+	req, err := http.NewRequestWithContext(ctx, method, uri, bytes.NewReader(buf))
 	if err != nil {
 		return Response{
 			Response: &http.Response{},
@@ -163,18 +163,18 @@ func (c *Client) Get(ctx context.Context, path string, v any) (Response, error) 
 	return c.Do(ctx, http.MethodGet, path, nil, v)
 }
 
-// Put sends an HTTP PUT request and returns the API response.
-// The API response is JSON decoded and stored in the value pointed to by v, or returned
-// as an error if an API error has occurred.
-func (c *Client) Put(ctx context.Context, path string, in any) (Response, error) {
-	return c.Do(ctx, http.MethodPut, path, in, nil)
-}
-
 // Post sends an HTTP POST request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
 func (c *Client) Post(ctx context.Context, path string, in any) (Response, error) {
 	return c.Do(ctx, http.MethodPost, path, in, nil)
+}
+
+// Put sends an HTTP PUT request and returns the API response.
+// The API response is JSON decoded and stored in the value pointed to by v, or returned
+// as an error if an API error has occurred.
+func (c *Client) Put(ctx context.Context, path string, in any) (Response, error) {
+	return c.Do(ctx, http.MethodPut, path, in, nil)
 }
 
 // Delete sends an HTTP DELETE request and returns the API response.
