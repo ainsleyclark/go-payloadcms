@@ -1,4 +1,4 @@
-import { mongooseAdapter } from '@payloadcms/db-mongodb';
+import {postgresAdapter} from '@payloadcms/db-postgres'
 import { webpackBundler } from '@payloadcms/bundler-webpack';
 import { slateEditor } from '@payloadcms/richtext-slate';
 import { buildConfig } from 'payload/config';
@@ -6,6 +6,8 @@ import { buildConfig } from 'payload/config';
 import {Users} from './collections/Users';
 import {Posts} from './collections/Posts';
 import {Settings} from "./globals/Settings";
+
+console.log('DATABASE_URI', process.env.DATABASE_URI);
 
 export default buildConfig({
 	admin: {
@@ -21,7 +23,10 @@ export default buildConfig({
 		Settings,
 	],
 	plugins: [],
-	db: mongooseAdapter({
-		url: process.env.DATABASE_URI,
+
+	db: postgresAdapter({
+		pool: {
+			url: process.env.DATABASE_URI,
+		}
 	}),
 });

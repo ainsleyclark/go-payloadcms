@@ -1,8 +1,10 @@
 package payload_test
 
-import (
-	"testing"
-)
+import "testing"
+
+func TestSomething(t *testing.T) {
+	// db.Query()
+}
 
 //var db *sql.DB
 //
@@ -50,7 +52,3 @@ import (
 //
 //	os.Exit(code)
 //}
-
-func TestSomething(t *testing.T) {
-	// db.Query()
-}

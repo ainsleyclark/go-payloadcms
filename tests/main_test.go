@@ -1,16 +1,25 @@
 package payload
 
 import (
-	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"testing"
 
+	_ "github.com/lib/pq"
+
 	"github.com/ory/dockertest/v3"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/ory/dockertest/v3/docker"
 )
+
+// See: https://github.com/mahjadan/go-integration-test/blob/main/integration/main_test.go
+// For example
+
+var db *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
@@ -24,76 +33,108 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not create Network to docker: %s \n", err)
 	}
 
-	mongoCnt, uri, err := startMongoDB(pool, network)
+	postgresCnt, uri, err := startPostgresDB(pool, network)
 	if err != nil {
-		cleanUp(1, pool, network, mongoCnt)
+		cleanUp(1, pool, network, postgresCnt)
 	}
 
 	payload, err := startPayloadCMS(pool, network, uri)
 	if err != nil {
-		cleanUp(1, pool, network, mongoCnt)
+		fmt.Printf("Could not start Payload CMS: %v \n", err)
+		cleanUp(1, pool, network, postgresCnt, payload)
 	}
 
 	println("Starting tests")
 	code := m.Run()
 	println("Stopping tests")
 
-	cleanUp(code, pool, network, mongoCnt, payload)
+	cleanUp(code, pool, network, postgresCnt, payload)
 }
 
-func startMongoDB(pool *dockertest.Pool, network *dockertest.Network) (*dockertest.Resource, string, error) {
-	r, err := pool.RunWithOptions(&dockertest.RunOptions{
-		Name:       "mongodb",
-		Repository: "mongo",
-		Tag:        "3.6",
-		Networks:   []*dockertest.Network{network},
+func startPostgresDB(pool *dockertest.Pool, network *dockertest.Network) (*dockertest.Resource, string, error) {
+	fmt.Println("Starting Postgres")
+
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "postgres",
+		Name:       "postgres",
+		Tag:        "11",
+		Env: []string{
+			"POSTGRES_PASSWORD=secret",
+			"POSTGRES_USER=user_name",
+			"POSTGRES_DB=payload",
+			"listen_addresses = '*'",
+		},
+		Networks: []*dockertest.Network{network},
+	}, func(config *docker.HostConfig) {
+		// set AutoRemove to true so that stopped container goes away by itself
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{
+			Name: "no",
+		}
 	})
 	if err != nil {
 		fmt.Printf("Could not start Mongodb: %v \n", err)
-		return r, "", err
+		return resource, "", err
 	}
-	mongoPort := r.GetPort("27017/tcp")
-	uri := fmt.Sprintf("mongodb://localhost:%s", mongoPort)
 
-	fmt.Printf("mongo-%s - connecting to : %s \n", "3.6", fmt.Sprintf("mongodb://localhost:%s", mongoPort))
+	hostAndPort := resource.GetHostPort("5432/tcp")
+	databaseUrl := fmt.Sprintf("postgres://user_name:secret@%s/payload?sslmode=disable", hostAndPort)
+
+	log.Println("Connecting to database on url: ", databaseUrl)
+
 	if err := pool.Retry(func() error {
-		var err error
-
-		clientOptions := options.Client().ApplyURI(uri)
-		client, err := mongo.Connect(context.TODO(), clientOptions)
+		db, err = sql.Open("postgres", databaseUrl)
 		if err != nil {
 			return err
 		}
-
-		err = client.Ping(context.TODO(), nil)
-		if err == nil {
-			fmt.Println("successfully connected to Mongodb.")
-		}
-		return err
-
+		return db.Ping()
 	}); err != nil {
 		fmt.Printf("Could not connect to mongodb container: %v \n", err)
-		return r, "", err
+		return resource, "", err
 	}
 
-	return r, uri, nil
+	return resource, databaseUrl, nil
 }
 
-func startPayloadCMS(pool *dockertest.Pool, network *dockertest.Network, mongoURI string) (*dockertest.Resource, error) {
-	r, err := pool.BuildAndRunWithOptions("../dev/Dockerfile", &dockertest.RunOptions{
-		Name:       "payload",
-		Repository: "payloadcms",
-		Networks:   []*dockertest.Network{network},
-		Env:        []string{"DATABASE_URI=" + mongoURI},
+func startPayloadCMS(pool *dockertest.Pool, network *dockertest.Network, dbURL string) (*dockertest.Resource, error) {
+	fmt.Println("Starting Payload CMS")
+
+	resource, err := pool.BuildAndRunWithOptions("../dev/Dockerfile", &dockertest.RunOptions{
+		Hostname: "payload",
+		Name:     "payload",
+		Networks: []*dockertest.Network{network},
+		Env: []string{
+			"DATABASE_URI=" + dbURL,
+			"PAYLOAD_SECRET=secret",
+		},
 	})
 	if err != nil {
 		fmt.Printf("Could not start Payload CMS: %v \n", err)
-		return r, err
+		return resource, err
 	}
 
-	fmt.Printf("Payload CMS is running on: %s \n", r.GetPort("3000/tcp"))
+	fmt.Printf("Moving to retry: " + "http://localhost:" + resource.GetPort("3000/tcp") + "/admin")
 
-	return r, nil
+	if err := pool.Retry(func() error {
+		url := "http://localhost:" + resource.GetPort("3000/tcp") + "/admin"
+		post, err := http.DefaultClient.Post(url, "application/json", nil)
+		if err != nil {
+			return err
+		}
+		buf, err := io.ReadAll(post.Body)
+		fmt.Println(string(buf))
+
+		if post.StatusCode != 200 {
+			return errors.New(fmt.Sprintf("Expected status 200, got %d", post.StatusCode))
+		}
+		return nil
+	}); err != nil {
+		return resource, err
+	}
+
+	fmt.Printf("Payload CMS is running on: %s \n", resource.GetPort("3000/tcp"))
+
+	return resource, nil
 }
 
 func cleanUp(code int, pool *dockertest.Pool, network *dockertest.Network, resources ...*dockertest.Resource) {
