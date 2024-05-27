@@ -11,9 +11,10 @@ import (
 var (
 	defaultBody    = []byte(`{"id": 1, "name": "John Doe"}`)
 	defaultHandler = func(t *testing.T) http.HandlerFunc {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Helper()
+		return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			_, err := w.Write([]byte(defaultBody))
+			_, err := w.Write(defaultBody)
 			if err != nil {
 				t.Errorf("failed to write response: %v", err)
 			}
@@ -38,14 +39,15 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	t.Run("OK", func(t *testing.T) {
+		t.Parallel()
 		_, err := New(WithBaseURL("http://localhost:8080"))
 		if err != nil {
 			t.Errorf("expected no error: %v", err)
 		}
-
 	})
 
 	t.Run("Failed validation", func(t *testing.T) {
+		t.Parallel()
 		_, err := New()
 		if err == nil {
 			t.Errorf("expected error, got nil")
@@ -53,6 +55,7 @@ func TestNew(t *testing.T) {
 	})
 
 	t.Run("Assigns client", func(t *testing.T) {
+		t.Parallel()
 		c, err := New(
 			WithClient(nil),
 			WithBaseURL("http://localhost:8080"),
@@ -127,7 +130,7 @@ func TestClientDo(t *testing.T) {
 }
 
 func TestClient_NewRequest(t *testing.T) {
-
+	t.Skip("TODO: implement")
 }
 
 func TestErrors_Error(t *testing.T) {

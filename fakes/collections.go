@@ -8,7 +8,7 @@ import (
 
 // MockCollectionService is a mock implementation of the CollectionService interface.
 type MockCollectionService struct {
-	FindByIdFunc   func(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error)
+	FindByIDFunc   func(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error)
 	FindBySlugFunc func(ctx context.Context, collection payloadcms.Collection, slug string, out any) (payloadcms.Response, error)
 	ListFunc       func(ctx context.Context, collection payloadcms.Collection, params payloadcms.ListParams, out any) (payloadcms.Response, error)
 	CreateFunc     func(ctx context.Context, collection payloadcms.Collection, in any) (payloadcms.Response, error)
@@ -19,30 +19,30 @@ type MockCollectionService struct {
 // NewMockCollectionService creates a new fake collections stub.
 func NewMockCollectionService() *MockCollectionService {
 	return &MockCollectionService{
-		FindByIdFunc: func(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error) {
+		FindByIDFunc: func(_ context.Context, _ payloadcms.Collection, _ int, _ any) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
-		FindBySlugFunc: func(ctx context.Context, collection payloadcms.Collection, slug string, out any) (payloadcms.Response, error) {
+		FindBySlugFunc: func(_ context.Context, _ payloadcms.Collection, _ string, _ any) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
-		ListFunc: func(ctx context.Context, collection payloadcms.Collection, params payloadcms.ListParams, out any) (payloadcms.Response, error) {
+		ListFunc: func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, _ any) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
-		CreateFunc: func(ctx context.Context, collection payloadcms.Collection, in any) (payloadcms.Response, error) {
+		CreateFunc: func(_ context.Context, _ payloadcms.Collection, _ any) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
-		UpdateByIDFunc: func(ctx context.Context, collection payloadcms.Collection, id int, in any) (payloadcms.Response, error) {
+		UpdateByIDFunc: func(_ context.Context, _ payloadcms.Collection, _ int, _ any) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
-		DeleteByIDFunc: func(ctx context.Context, collection payloadcms.Collection, id int) (payloadcms.Response, error) {
+		DeleteByIDFunc: func(_ context.Context, _ payloadcms.Collection, _ int) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
 	}
 }
 
-// FindById calls the mock implementation.
-func (m *MockCollectionService) FindById(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error) {
-	return m.FindByIdFunc(ctx, collection, id, out)
+// FindByID calls the mock implementation.
+func (m *MockCollectionService) FindByID(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error) {
+	return m.FindByIDFunc(ctx, collection, id, out)
 }
 
 // FindBySlug calls the mock implementation.

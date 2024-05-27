@@ -17,7 +17,6 @@ func TestOptions(t *testing.T) {
 		WithBaseURL(baseURL),
 		WithAPIKey(apiKey),
 	)
-
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}

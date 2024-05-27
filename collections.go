@@ -17,7 +17,7 @@ import (
 //
 // See: https://payloadcms.com/docs/rest-api/overview#collections
 type CollectionService interface {
-	FindById(ctx context.Context, collection Collection, id int, out any) (Response, error)
+	FindByID(ctx context.Context, collection Collection, id int, out any) (Response, error)
 	FindBySlug(ctx context.Context, collection Collection, slug string, out any) (Response, error)
 	List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error)
 	Create(ctx context.Context, collection Collection, in any) (Response, error)
@@ -66,7 +66,7 @@ type (
 		HasPrevPage   bool `json:"hasPrevPage"`
 		HasNextPage   bool `json:"hasNextPage"`
 		PrevPage      any  `json:"prevPage"`
-		NextPage      any  `json:"nextPage"`
+		NextPage      any  `json:"nextPage"` //no:lint tagliatelle
 	}
 	// CreateResponse represents a response from the Payload CMS
 	// when a new entity is created.
@@ -84,8 +84,8 @@ type (
 	}
 )
 
-// FindById finds a collection entity by its ID.
-func (s CollectionServiceOp) FindById(ctx context.Context, collection Collection, id int, out any) (Response, error) {
+// FindByID finds a collection entity by its ID.
+func (s CollectionServiceOp) FindByID(ctx context.Context, collection Collection, id int, out any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
