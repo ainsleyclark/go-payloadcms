@@ -140,7 +140,29 @@ func TestClientDo(t *testing.T) {
 }
 
 func TestClient_NewRequest(t *testing.T) {
-	t.Skip("TODO: implement")
+	c := Client{apiKey: "123"}
+
+	t.Run("OK", func(t *testing.T) {
+		got, err := c.NewRequest(context.TODO(), http.MethodGet, "/users/1", nil)
+		AssertNoError(t, err)
+		AssertEqual(t, http.MethodGet, got.Method)
+		AssertEqual(t, "application/json", got.Header.Get("Content-Type"))
+		AssertEqual(t, "users API-Key 123", got.Header.Get("Authorization"))
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		_, err := c.NewRequest(context.TODO(), http.MethodGet, "@£$%", nil)
+		AssertError(t, err)
+	})
+}
+
+func TestClient_NewFormRequest(t *testing.T) {
+	c := Client{apiKey: "123"}
+	got, err := c.NewFormRequest(context.TODO(), http.MethodGet, "/users/1", nil, "multipart/form-data")
+	AssertNoError(t, err)
+	AssertEqual(t, http.MethodGet, got.Method)
+	AssertEqual(t, "multipart/form-data", got.Header.Get("Content-Type"))
+	AssertEqual(t, "users API-Key 123", got.Header.Get("Authorization"))
 }
 
 func TestErrors_Error(t *testing.T) {

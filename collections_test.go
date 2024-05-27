@@ -89,6 +89,6 @@ func TestCollectionsService(t *testing.T) {
 		}
 		client.Collections = CollectionServiceOp{Client: client}
 		_, err := client.Collections.List(context.Background(), collection, ListParams{}, nil)
-		AssertEqual(t, err == nil, false)
+		AssertError(t, err)
 	})
 }

@@ -190,8 +190,8 @@ func (c *Client) Delete(ctx context.Context, path string, v any) (Response, erro
 // body is JSON encoded and included as the request body.
 // TODO: Clean up these comments.
 func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
-	url := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	uri := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
+	req, err := http.NewRequestWithContext(ctx, method, uri, body)
 	if err != nil {
 		return nil, err
 	}
