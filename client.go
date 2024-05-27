@@ -8,7 +8,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
+
+	"github.com/google/go-querystring/query"
 )
 
 // Client represents a Payload CMS client.
@@ -32,17 +35,19 @@ type Client struct {
 	// - Preferences: 	https://payloadcms.com/docs/rest-api/overview#preferences
 
 	// Private fields
-	client  *http.Client
-	baseURL string
-	apiKey  string
-	reader  func(io.Reader) ([]byte, error)
+	client      *http.Client
+	baseURL     string
+	apiKey      string
+	reader      func(io.Reader) ([]byte, error)
+	queryValues func(v any) (url.Values, error)
 }
 
 // New creates a new Payload CMS client.
 func New(options ...Option) (*Client, error) {
 	c := &Client{
-		client: http.DefaultClient,
-		reader: io.ReadAll,
+		client:      http.DefaultClient,
+		reader:      io.ReadAll,
+		queryValues: query.Values,
 	}
 
 	// Apply all the functional options to configure the client.

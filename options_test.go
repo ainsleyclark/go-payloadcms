@@ -17,16 +17,9 @@ func TestOptions(t *testing.T) {
 		WithBaseURL(baseURL),
 		WithAPIKey(apiKey),
 	)
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-	}
-	if got.client != client {
-		t.Errorf("expected client %v, got %v", client, got.client)
-	}
-	if got.baseURL != baseURL {
-		t.Errorf("expected baseURL %s, got %s", baseURL, got.baseURL)
-	}
-	if got.apiKey != apiKey {
-		t.Errorf("expected apiKey %s, got %s", apiKey, got.apiKey)
-	}
+
+	AssertNoError(t, err)
+	AssertEqual(t, got.client, client)
+	AssertEqual(t, got.baseURL, baseURL)
+	AssertEqual(t, got.apiKey, apiKey)
 }

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-	"github.com/google/go-querystring/query"
 )
 
 //go:generate mockgen -package=payloadfakes -destination=payloadfakes/collection.go . CollectionService
@@ -99,7 +97,7 @@ func (s CollectionServiceOp) FindBySlug(ctx context.Context, collection Collecti
 
 // List lists all collection entities.
 func (s CollectionServiceOp) List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error) {
-	v, err := query.Values(params)
+	v, err := s.Client.queryValues(params)
 	if err != nil {
 		return Response{}, err
 	}

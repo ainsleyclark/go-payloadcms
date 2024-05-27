@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/google/go-querystring/query"
 )
 
 var (
@@ -34,9 +36,10 @@ func Setup(t *testing.T, handlerFunc http.HandlerFunc) (*Client, func()) {
 
 	server := httptest.NewServer(handlerFunc)
 	return &Client{
-			baseURL: server.URL,
-			client:  server.Client(),
-			reader:  io.ReadAll,
+			baseURL:     server.URL,
+			client:      server.Client(),
+			reader:      io.ReadAll,
+			queryValues: query.Values,
 		}, func() {
 			server.Close()
 		}

@@ -2,7 +2,9 @@ package payloadcms
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"net/url"
 	"testing"
 )
 
@@ -30,7 +32,11 @@ func TestCollectionsService(t *testing.T) {
 		},
 		"List": {
 			call: func(s CollectionService) (Response, error) {
-				return s.List(context.Background(), collection, ListParams{}, nil)
+				return s.List(context.Background(), collection, ListParams{
+					Sort:  "asc",
+					Limit: 10,
+					Page:  1,
+				}, nil)
 			},
 			wantURL:    "/api/posts",
 			wantMethod: http.MethodGet,
@@ -74,4 +80,15 @@ func TestCollectionsService(t *testing.T) {
 			AssertEqual(t, string(resp.Content), string(defaultBody))
 		})
 	}
+
+	t.Run("List returns error on QueryValues", func(t *testing.T) {
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+		client.queryValues = func(_ any) (url.Values, error) {
+			return nil, errors.New("query error")
+		}
+		client.Collections = CollectionServiceOp{Client: client}
+		_, err := client.Collections.List(context.Background(), collection, ListParams{}, nil)
+		AssertEqual(t, err == nil, false)
+	})
 }
