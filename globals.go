@@ -1,9 +1,7 @@
 package payloadcms
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -35,9 +33,5 @@ func (s GlobalsServiceOp) Get(ctx context.Context, global Global, in any) (Respo
 // Update updates a global by its slug.
 func (s GlobalsServiceOp) Update(ctx context.Context, global Global, in any) (Response, error) {
 	path := fmt.Sprintf("/api/globals/%s", global)
-	buf, err := json.Marshal(in)
-	if err != nil {
-		return Response{}, err
-	}
-	return s.Client.Do(ctx, http.MethodPost, path, bytes.NewReader(buf), nil)
+	return s.Client.Do(ctx, http.MethodPost, path, in, nil)
 }

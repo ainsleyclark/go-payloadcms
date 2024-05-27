@@ -108,9 +108,14 @@ func (e Errors) Error() string {
 // error if an API error has occurred.
 //
 // Errors occur in the eventuality if the http.StatusCode is not 2xx.
-func (c *Client) Do(ctx context.Context, method, path string, body io.Reader, v any) (Response, error) {
+func (c *Client) Do(ctx context.Context, method, path string, body any, v any) (Response, error) {
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return Response{}, err
+	}
+
 	url := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(buf))
 	if err != nil {
 		return Response{
 			Response: &http.Response{},
@@ -157,22 +162,14 @@ func (c *Client) Get(ctx context.Context, path string, v any) (Response, error) 
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
 func (c *Client) Put(ctx context.Context, path string, in any) (Response, error) {
-	buf, err := json.Marshal(in)
-	if err != nil {
-		return Response{}, err
-	}
-	return c.Do(ctx, http.MethodPut, path, bytes.NewReader(buf), nil)
+	return c.Do(ctx, http.MethodPut, path, in, nil)
 }
 
 // Post sends an HTTP POST request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
 func (c *Client) Post(ctx context.Context, path string, in any) (Response, error) {
-	buf, err := json.Marshal(in)
-	if err != nil {
-		return Response{}, err
-	}
-	return c.Do(ctx, http.MethodPost, path, bytes.NewReader(buf), nil)
+	return c.Do(ctx, http.MethodPost, path, in, nil)
 }
 
 // Delete sends an HTTP DELETE request and returns the API response.
@@ -187,7 +184,7 @@ func (c *Client) Delete(ctx context.Context, path string, v any) (Response, erro
 // specified without a preceding slash. If specified, the value pointed to by
 // body is JSON encoded and included as the request body.
 // TODO: Clean up these comments.
-func (c *Client) NewRequest(ctx context.Context, path, method string, body io.Reader) (*http.Request, error) {
+func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
 	url := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
@@ -201,15 +198,13 @@ func (c *Client) NewRequest(ctx context.Context, path, method string, body io.Re
 }
 
 func (c *Client) NewFormRequest(ctx context.Context, method, path string, body io.Reader, contentType string) (*http.Request, error) {
-	url := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	req, err := c.NewRequest(ctx, method, path, body)
 	if err != nil {
 		return nil, err
 	}
 
 	// Set the content type to contain the boundary.
 	req.Header.Set("Content-Type", contentType)
-	req.Header.Add("Authorization", "users API-Key "+c.apiKey)
 
 	return req, nil
 }

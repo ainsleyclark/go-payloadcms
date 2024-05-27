@@ -10,7 +10,7 @@ import (
 
 var (
 	defaultBody     = []byte(`{"id": 1, "name": "John Doe"}`)
-	defaultResponse = Entity{ID: 1, Name: "John Doe"}
+	defaultResource = Resource{ID: 1, Name: "John Doe"}
 	defaultHandler  = func(t *testing.T) http.HandlerFunc {
 		t.Helper()
 
@@ -24,23 +24,9 @@ var (
 	}
 )
 
-type Entity struct {
+type Resource struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
-}
-
-// Global test helper functions
-
-func AssertEqual(t *testing.T, expected, actual any) {
-	if expected != actual {
-		t.Errorf("expected %v, got %v", expected, actual)
-	}
-}
-
-func AssertNoError(t *testing.T, err error) {
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-	}
 }
 
 func Setup(t *testing.T, handlerFunc http.HandlerFunc) (*Client, func()) {

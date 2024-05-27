@@ -1,9 +1,7 @@
 package payloadcms
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -91,6 +89,9 @@ func (s CollectionServiceOp) FindByID(ctx context.Context, collection Collection
 }
 
 // FindBySlug finds a collection entity by its slug.
+// Note: This is not a standard Payload Rest endpoint, but included for convenience.
+// If you want to use this endpoint, you'll need to add an express handler
+// to your Payload config.
 func (s CollectionServiceOp) FindBySlug(ctx context.Context, collection Collection, slug string, out any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%s", collection, slug)
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
@@ -109,21 +110,13 @@ func (s CollectionServiceOp) List(ctx context.Context, collection Collection, pa
 // Create creates a new collection entity.
 func (s CollectionServiceOp) Create(ctx context.Context, collection Collection, in any) (Response, error) {
 	path := fmt.Sprintf("/api/%s", collection)
-	buf, err := json.Marshal(in)
-	if err != nil {
-		return Response{}, err
-	}
-	return s.Client.Do(ctx, http.MethodPost, path, bytes.NewReader(buf), nil)
+	return s.Client.Do(ctx, http.MethodPost, path, in, nil)
 }
 
 // UpdateByID updates a collection entity by its ID.
 func (s CollectionServiceOp) UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
-	buf, err := json.Marshal(in)
-	if err != nil {
-		return Response{}, err
-	}
-	return s.Client.Do(ctx, http.MethodPut, path, bytes.NewReader(buf), nil)
+	return s.Client.Do(ctx, http.MethodPut, path, in, nil)
 }
 
 // DeleteByID deletes a collection entity by its ID.
