@@ -9,20 +9,41 @@ import (
 )
 
 var (
-	defaultBody    = []byte(`{"id": 1, "name": "John Doe"}`)
-	defaultHandler = func(t *testing.T) http.HandlerFunc {
+	defaultBody     = []byte(`{"id": 1, "name": "John Doe"}`)
+	defaultResponse = Entity{ID: 1, Name: "John Doe"}
+	defaultHandler  = func(t *testing.T) http.HandlerFunc {
 		t.Helper()
-		return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+
+		return func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			_, err := w.Write(defaultBody)
 			if err != nil {
 				t.Errorf("failed to write response: %v", err)
 			}
-		})
+		}
 	}
 )
 
-func Setup(t *testing.T, handlerFunc http.HandlerFunc, baseURL string) (*Client, func()) {
+type Entity struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Global test helper functions
+
+func AssertEqual(t *testing.T, expected, actual any) {
+	if expected != actual {
+		t.Errorf("expected %v, got %v", expected, actual)
+	}
+}
+
+func AssertNoError(t *testing.T, err error) {
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+}
+
+func Setup(t *testing.T, handlerFunc http.HandlerFunc) (*Client, func()) {
 	t.Helper()
 
 	server := httptest.NewServer(handlerFunc)
@@ -111,7 +132,7 @@ func TestClientDo(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
-			client, teardown := Setup(t, defaultHandler(t), string(test.wantBody))
+			client, teardown := Setup(t, defaultHandler(t))
 			defer teardown()
 
 			response, err := client.Do(context.TODO(), test.method, test.path, nil, nil)
