@@ -16,7 +16,7 @@ type MockCollectionService struct {
 	DeleteByIDFunc func(ctx context.Context, collection payloadcms.Collection, id int) (payloadcms.Response, error)
 }
 
-// NewMockCollectionService creates a new MockCollectionService with dpayloadcms.
+// NewMockCollectionService creates a new fake collections stub.
 func NewMockCollectionService() *MockCollectionService {
 	return &MockCollectionService{
 		FindByIdFunc: func(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error) {
