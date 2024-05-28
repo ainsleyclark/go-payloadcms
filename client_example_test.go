@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+
+	"github.com/ainsleyclark/go-payloadcms"
 )
 
 type User struct {
