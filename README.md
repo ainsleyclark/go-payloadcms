@@ -11,11 +11,11 @@
 
 <div align="center">
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/ainsleydev/go-payloadcms)](https://goreportcard.com/report/github.com/ainsleydev/go-payloadcms)
-[![Maintainability](https://api.codeclimate.com/v1/badges/9cb93230fcfd6643dfa5/maintainability)](https://codeclimate.com/github/ainsleydev/go-payloadcms/maintainability)
-[![GoDoc](https://godoc.org/github.com/ainsleydev/go-payloadcms?status.svg)](https://godoc.org/github.com/ainsleydev/go-payloadcms)
-[![Lint](https://github.com/ainsleydev/go-payloadcms/actions/workflows/lint.yaml/badge.svg?branch=main)](https://github.com/ainsleydev/audits.com/actions/workflows/lint.yaml?query=main)
-[![Test](https://github.com/ainsleydev/go-payloadcms/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/ainsleydev/audits.com/actions/workflows/test.yaml?query=main)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ainsleyclark/go-payloadcms)](https://goreportcard.com/report/github.com/ainsleyclark/go-payloadcms)
+[![Maintainability](https://api.codeclimate.com/v1/badges/9cb93230fcfd6643dfa5/maintainability)](https://codeclimate.com/github/ainsleyclark/go-payloadcms/maintainability)
+[![GoDoc](https://godoc.org/github.com/ainsleyclark/go-payloadcms?status.svg)](https://godoc.org/github.com/ainsleyclark/go-payloadcms)
+[![Lint](https://github.com/ainsleyclark/go-payloadcms/actions/workflows/lint.yaml/badge.svg?branch=main)](https://github.com/ainsleyclark/audits.com/actions/workflows/lint.yaml?query=main)
+[![Test](https://github.com/ainsleyclark/go-payloadcms/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/ainsleyclark/audits.com/actions/workflows/test.yaml?query=main)
 <br />
 [![codecov](https://codecov.io/gh/payloadcms/go-payload/branch/master/graph/badge.svg)](https://codecov.io/gh/payloadcms/go-payload)
 [![ainsley.dev](https://img.shields.io/badge/-ainsley.dev-black?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH5wEYDzUGL1b35AAABA1JREFUWMPtlttvFVUUxn977ZnZu+W0tLalqRovBAUvQag0xNQbpSIosSSIJC198YknJfHJxDf9A/DBJ0x8MbFACjVqvCASq6FYFLFBvJAaAomkFCmhHGpLO+PDzOmZzpn2nKP4pCs5ycmevb7vW99as/fA//FfD1XO5p1nzuA3NWJHx5T8cVkRBPHHQfRjd0tzyZhOOQIy27bAxET9zCuvvhY0r2kC/OiRABeAN4BL/4oDr9+3lGszPs7UVNfUE23v3Nj5koszR/8N4EXg3XJckFIFuCLUuU7GWNNtTg25cu4syJx0F+gGMuU4UJKAt1Yux1UKV6TVat1qs+OYwQESMwDQCjwKsOv4iZsnwGihwbiuEek2WjJGhMrvv0UujYKa08VFkQvuTXNgz6oVeCIo1CqrZYMRwTiaytERKn44kRQAsAFYDbBrsLgLRQU0GI919TXKiHQaUQ1GBCuCCQKqjg/MqInrM4lZrgc6A1CljHhRAZ4Ip65m77FaOmbJdehC5vzZr1RAf/T6x6NDwb3/uAVfP74GnwCjZasRuXuWXASj9XQme+3t6erqPcB0IvUuYCsUH8YFBRhRNBqvyYpsn0MeOnG6wvc/9x33MPBjSvp24Na/7cDP7Y/gKIURecZoeTBObkSwWg7UNjaOeFfGLgK9KRAPAM8Wc2FeAUaEWtddbEV2WBFtREXkCqvlghE5yOQkvucBHAR+T0BooAtYXLYDI5sewxWFJ/Kk1bI2UTlW5DMFp03+JPwJ+DQFai2wbiEXUgVUas0trmuslm4jUmGi/tuwDVmrpafBuNPVrs7N/wzQA2QTUJbwYLIlOxB0tOGJ4IhqsSJts+T54Rv0lBz1RFh9ZJA385fOAHAshaMNaAF4OcWFQgeUwhMlrlJdnqjaOLkR8Y2WvbWec9VIQeo4sJf8FZ2LmmgWJO1cmm8I7wc2a6XwosGL+v+rFfnYUYplh47Obo5dvZ8Av6TgbSZ8KxYWEGxZn/u7Dbg9t8HNnwF9S2qqzqVUn4vzQF/K+m3AC1A4jGlId0QC8l0BXKVGrahe//okNR99WZAUc6EXuJiC+zxw57wOxKp/DliRAvCFKDUkxS+YIeBwyvryCHuOC0kH6oBOCj/V/gTeA6aK0oefZj3ARGJdRdh1BQ7Eqm8HHk4B/Q7oB1B9acWFEWtDf5STjGbgqbgLcQcqCQ8NL5EUAPuBsRKqz8UVYB+F97QXcSyatSXoWJ8zvB04AFQlkoaBp4HhhaqPR1TdUsLjeVni8TjhVX0odCAkd4AdKeQAHxIwXEb1Odt+Az5IeVQVcTmhgDBWAhtTNl8G9qGAwKfU2N3SnJvi/RFGMjYCD8UFdACNKRsHgZMA6v0j5ZpAlPtNyvqSiJO/AKik60y0ALlUAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIzLTAxLTI0VDE1OjUzOjA2KzAwOjAwm5vntAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMy0wMS0yNFQxNTo1MzowNiswMDowMOrGXwgAAABXelRYdFJhdyBwcm9maWxlIHR5cGUgaXB0YwAAeJzj8gwIcVYoKMpPy8xJ5VIAAyMLLmMLEyMTS5MUAxMgRIA0w2QDI7NUIMvY1MjEzMQcxAfLgEigSi4A6hcRdPJCNZUAAAAASUVORK5CYII=)](https://ainsley.dev)
@@ -26,7 +26,7 @@
 ## Installation
 
 ```bash
-go get -u github.com/ainsleydev/go-payloadcms
+go get -u github.com/ainsleyclark/go-payloadcms
 ```
 
 ## Quick Start
@@ -154,7 +154,7 @@ if err != nil {
 
 ```go
 var settings Settings // Any struct representing a global type.
-resp, err := client.Globals.Update(context.Background(), "global-slug", updatedData)
+resp, err := client.Globals.Update(context.Background(), "settings", updatedData)
 if err != nil {
 	fmt.Println(err)
 	return
@@ -206,7 +206,7 @@ if err != nil {
 ## Mocks
 
 Mock implementations can be found in `payloadfakes` package located
-in [fakes](https://github.com/ainsleydev/go-payloadcms/tree/main/fakes) directory.
+in [fakes](https://github.com/ainsleyclark/go-payloadcms/tree/main/fakes) directory.
 
 They provide mock implementations of all the services provided by the client for convenience.
 
