@@ -26,9 +26,8 @@
 ## Introduction
 
 Go Payload is a GoLang client library for Payload CMS. It provides a simple and easy-to-use
-interface
-for interacting with the Payload CMS API. The library is designed with types in mind, saving you the
-hassle of dealing with unmarshalling JSON responses into your Payload collections and globals.
+interface for interacting with the Payload CMS API by saving you the hassle of dealing with
+unmarshalling JSON responses into your Payload collections and globals.
 
 ## Installation
 
@@ -299,11 +298,6 @@ pnpm run dev
 
 Contributions are welcome! If you find any bugs or have suggestions for improvement, please open an
 issue or submit a pull request.
-
-## Open Source
-
-[ainsley.dev](https://ainsley.dev) permits the use of any code found within the repository for use
-with external projects.
 
 ## License
 
