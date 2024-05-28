@@ -32,7 +32,11 @@ func TestPayload(t *testing.T) {
 	mockCollectionService := payloadfakes.NewMockCollectionService()
 
 	// Define the behavior of the FindByID method
-	mockCollectionService.FindByIDFunc = func(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error) {
+	mockCollectionService.FindByIDFunc = func(ctx context.Context,
+		collection payloadcms.Collection,
+		id int,
+		out any,
+	) (payloadcms.Response, error) {
 	    // Custom logic for the mock implementation
 	    return payloadcms.Response{}, nil
 	}

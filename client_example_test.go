@@ -24,11 +24,15 @@ func PayloadCMS() {
 		log.Fatalln(err)
 	}
 
-	var user User
-	resp, err := client.Collections.FindByID(context.Background(), "users", 1, &user)
+	var users payloadcms.ListResponse[User]
+	resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{
+		Sort:  "-createdAt",
+		Limit: 10,
+		Page:  1,
+	}, &users)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("Recieved status: %d, with body: %s\n", resp.StatusCode, string(resp.Body))
+	fmt.Printf("Recieved status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
 }
