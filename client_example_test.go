@@ -19,7 +19,6 @@ func PayloadCMS() {
 		payloadcms.WithBaseURL("http://localhost:8080"),
 		payloadcms.WithAPIKey("api-key"),
 	)
-
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -34,5 +33,5 @@ func PayloadCMS() {
 		log.Fatalln(err)
 	}
 
-	fmt.Printf("Recieved status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
+	fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content)) // nolint:forbidigo
 }

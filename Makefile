@@ -1,6 +1,7 @@
 setup: # Setup dependencies
 	go mod tidy
 	go generate ./...
+	cd dev && npm install
 .PHONY: setup
 
 lint: # Run linter and fix all issues
