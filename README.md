@@ -39,29 +39,30 @@ go get -u github.com/ainsleyclark/go-payloadcms
 ## Quick Start
 
 ```go
-type User struct {
-ID    int    `json:"id"`
-Email string `json:"email"`
-Name  string `json:"name"`
+type Entity struct {
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+	// ... other fields
 }
 
 func main() {
-client, err := payloadcms.New(
-payloadcms.WithBaseURL("http://localhost:8080"),
-payloadcms.WithAPIKey("api-key"),
-)
-
-if err != nil {
-log.Fatalln(err)
-}
-
-var users payloadcms.ListResponse[User]
-resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &users)
-if err != nil {
-log.Fatalln(err)
-}
-
-fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
+	client, err := payloadcms.New(
+		payloadcms.WithBaseURL("http://localhost:8080"),
+		payloadcms.WithAPIKey("api-key"),
+	)
+	
+	if err != nil {
+		log.Fatalln(err)
+	}
+	
+	var entities payloadcms.ListResponse[Entity]
+	resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &entities)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	
+	fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
 }
 ```
 
@@ -87,39 +88,37 @@ For more information please visit the docs [here](https://payloadcms.com/docs/ap
 #### FindByID
 
 ```go
-var user User // Any struct that conforms to your collection schema.
-resp, err := client.Collections.FindByID(context.Background(), "users", 1, &user)
+var entity Entity // Any struct that conforms to your collection schema.
+resp, err := client.Collections.FindByID(context.Background(), "collection", 1, &entity)
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
-// Have access to user
 ```
 
 #### List
 
 ```go
-var users payloadcms.ListResponse[User] // Must use ListResponse with generic type.
-resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{
-Sort:  "-createdAt",
-Limit: 10,
-Page:  1,
-}
+var entities payloadcms.ListResponse[Entity] // Must use ListResponse with generic type.
+resp, err := client.Collections.List(context.Background(), "collection", payloadcms.ListParams{
+	Sort:  "-createdAt",
+	Limit: 10,
+	Page:  1,
+}, entities)
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
-// Have access to users
 ```
 
 #### Create
 
 ```go
-var user User // Any struct representing the entity to be created.
-resp, err := client.Collections.Create(context.Background(), "users", user)
+var entity Entity // Any struct representing the entity to be created.
+resp, err := client.Collections.Create(context.Background(), "collection", entity)
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
@@ -127,11 +126,11 @@ fmt.Println(string(resp.Content)) // Can unmarshal into response struct if neede
 #### UpdateByID
 
 ```go
-var user User // Any struct representing the updated entity.
-resp, err := client.Collections.UpdateByID(context.Background(), "users", 1, user)
+var entity Entity // Any struct representing the updated entity.
+resp, err := client.Collections.UpdateByID(context.Background(), "collection", 1, entity)
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
@@ -139,10 +138,10 @@ fmt.Println(string(resp.Content)) // Can unmarshal into response struct if neede
 #### DeleteByID
 
 ```go
-resp, err := client.Collections.DeleteByID(context.Background(), "users", 1)
+resp, err := client.Collections.DeleteByID(context.Background(), "collection", 1)
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)	
+	return
 }
 // Use response data as needed
 ```
@@ -155,23 +154,22 @@ For more information please visit the docs [here](https://payloadcms.com/docs/ap
 #### Get
 
 ```go
-var settings Settings // Any struct representing a global type.
-resp, err := client.Globals.Get(context.Background(), "settings", &settings)
+var global Global // Any struct representing a global type.
+resp, err := client.Globals.Get(context.Background(), "global", &global)
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
-// Have access to settings
 ```
 
 #### Update
 
 ```go
-var settings Settings // Any struct representing a global type.
-resp, err := client.Globals.Update(context.Background(), "settings", updatedData)
+var global Global // Any struct representing a global type.
+resp, err := client.Globals.Update(context.Background(), "global", global)
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
@@ -186,18 +184,18 @@ For more information please visit the docs [here](https://payloadcms.com/docs/up
 ```go
 file, err := os.Open("path/to/file")
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
 
 media := &payloadcms.CreateResponse[Media]{}
 _, err = m.payload.Media.UploadFromURL(ctx, file, Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
-Collection:       "media",
+	Collection:       "media",
 })
 
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
 ```
 
@@ -206,12 +204,12 @@ return
 ```go
 media := &payloadcms.CreateResponse[Media]{}
 _, err = m.payload.Media.UploadFromURL(ctx, "https://payloadcms.com/picture-of-cat.jpg", Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
-Collection:       "media",
+	Collection:       "media",
 })
 
 if err != nil {
-fmt.Println(err)
-return
+	fmt.Println(err)
+	return
 }
 ```
 
@@ -226,21 +224,21 @@ They provide mock implementations of all the services provided by the client for
 
 ```go
 func TestPayload(t *testing.T) {
-// Create a new mock collection service
-mockCollectionService := payloadfakes.NewMockCollectionService()
-
-// Define the behavior of the FindByID method
-mockCollectionService.FindByIDFunc = func (ctx context.Context,
-collection payloadcms.Collection,
-id int,
-out any,
-) (payloadcms.Response, error) {
-// Custom logic for the mock implementation
-return payloadcms.Response{}, nil
-}
-
-// Use the mock collection service in your tests
-myFunctionUsingCollectionService(mockCollectionService)
+	// Create a new mock collection service
+	mockCollectionService := payloadfakes.NewMockCollectionService()
+	
+	// Define the behavior of the FindByID method
+	mockCollectionService.FindByIDFunc = func (ctx context.Context,
+		collection payloadcms.Collection,
+		id int,
+		out any,
+	) (payloadcms.Response, error) {
+		// Custom logic for the mock implementation
+		return payloadcms.Response{}, nil
+	}
+	
+	// Use the mock collection service in your tests
+	myFunctionUsingCollectionService(mockCollectionService)
 }
 ```
 
