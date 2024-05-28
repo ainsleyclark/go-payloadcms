@@ -23,6 +23,13 @@
 
 </div>
 
+## Introduction
+
+Go Payload is a GoLang client library for Payload CMS. It provides a simple and easy-to-use
+interface
+for interacting with the Payload CMS API. The library is designed with types in mind, saving you the
+hassle of dealing with unmarshalling JSON responses into your Payload collections and globals.
+
 ## Installation
 
 ```bash
@@ -33,28 +40,28 @@ go get -u github.com/ainsleyclark/go-payloadcms
 
 ```go
 type User struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
+ID    int    `json:"id"`
+Email string `json:"email"`
+Name  string `json:"name"`
 }
 
 func main() {
-	client, err := payloadcms.New(
-		payloadcms.WithBaseURL("http://localhost:8080"),
-		payloadcms.WithAPIKey("api-key"),
-	)
-	
-	if err != nil {
-		log.Fatalln(err)
-	}
-	
-	var users payloadcms.ListResponse[User]
-	resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &users)
-	if err != nil {
-		log.Fatalln(err)
-	}
+client, err := payloadcms.New(
+payloadcms.WithBaseURL("http://localhost:8080"),
+payloadcms.WithAPIKey("api-key"),
+)
 
-	fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
+if err != nil {
+log.Fatalln(err)
+}
+
+var users payloadcms.ListResponse[User]
+resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &users)
+if err != nil {
+log.Fatalln(err)
+}
+
+fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
 }
 ```
 
@@ -66,11 +73,11 @@ kick-start guide below to get you started.
 
 ## Services
 
-The client provides the services as defined below.
+The client provides the services as defined below. Each
 
-- Collections
-- Globals
-- Media
+- `Collections`
+- `Globals`
+- `Media`
 
 ### Collections
 
@@ -83,8 +90,8 @@ For more information please visit the docs [here](https://payloadcms.com/docs/ap
 var user User // Any struct that conforms to your collection schema.
 resp, err := client.Collections.FindByID(context.Background(), "users", 1, &user)
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 // Have access to user
 ```
@@ -94,13 +101,13 @@ if err != nil {
 ```go
 var users payloadcms.ListResponse[User] // Must use ListResponse with generic type.
 resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{
-	Sort:  "-createdAt",
-	Limit: 10,
-	Page:  1,
+Sort:  "-createdAt",
+Limit: 10,
+Page:  1,
 }
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 // Have access to users
 ```
@@ -111,8 +118,8 @@ if err != nil {
 var user User // Any struct representing the entity to be created.
 resp, err := client.Collections.Create(context.Background(), "users", user)
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
@@ -123,8 +130,8 @@ fmt.Println(string(resp.Content)) // Can unmarshal into response struct if neede
 var user User // Any struct representing the updated entity.
 resp, err := client.Collections.UpdateByID(context.Background(), "users", 1, user)
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
@@ -134,8 +141,8 @@ fmt.Println(string(resp.Content)) // Can unmarshal into response struct if neede
 ```go
 resp, err := client.Collections.DeleteByID(context.Background(), "users", 1)
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 // Use response data as needed
 ```
@@ -151,8 +158,8 @@ For more information please visit the docs [here](https://payloadcms.com/docs/ap
 var settings Settings // Any struct representing a global type.
 resp, err := client.Globals.Get(context.Background(), "settings", &settings)
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 // Have access to settings
 ```
@@ -163,8 +170,8 @@ if err != nil {
 var settings Settings // Any struct representing a global type.
 resp, err := client.Globals.Update(context.Background(), "settings", updatedData)
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
@@ -179,18 +186,18 @@ For more information please visit the docs [here](https://payloadcms.com/docs/up
 ```go
 file, err := os.Open("path/to/file")
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 
 media := &payloadcms.CreateResponse[Media]{}
 _, err = m.payload.Media.UploadFromURL(ctx, file, Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
-	Collection:       "media",
+Collection:       "media",
 })
 
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 ```
 
@@ -199,12 +206,12 @@ if err != nil {
 ```go
 media := &payloadcms.CreateResponse[Media]{}
 _, err = m.payload.Media.UploadFromURL(ctx, "https://payloadcms.com/picture-of-cat.jpg", Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
-	Collection:       "media",
+Collection:       "media",
 })
 
 if err != nil {
-	fmt.Println(err)
-	return
+fmt.Println(err)
+return
 }
 ```
 
@@ -219,23 +226,39 @@ They provide mock implementations of all the services provided by the client for
 
 ```go
 func TestPayload(t *testing.T) {
-	// Create a new mock collection service
-	mockCollectionService := payloadfakes.NewMockCollectionService()
-	
-	// Define the behavior of the FindByID method
-	mockCollectionService.FindByIDFunc = func (ctx context.Context,
-		collection payloadcms.Collection,
-		id int,
-		out any,
-	) (payloadcms.Response, error) {
-		// Custom logic for the mock implementation
-		return payloadcms.Response{}, nil
-	}
-	
-	// Use the mock collection service in your tests
-	myFunctionUsingCollectionService(mockCollectionService)
+// Create a new mock collection service
+mockCollectionService := payloadfakes.NewMockCollectionService()
+
+// Define the behavior of the FindByID method
+mockCollectionService.FindByIDFunc = func (ctx context.Context,
+collection payloadcms.Collection,
+id int,
+out any,
+) (payloadcms.Response, error) {
+// Custom logic for the mock implementation
+return payloadcms.Response{}, nil
+}
+
+// Use the mock collection service in your tests
+myFunctionUsingCollectionService(mockCollectionService)
 }
 ```
+
+## Response and Error Types
+
+The library defines custom response and error types to provide a more convenient way to interact with
+the API.
+
+* **Response:** This struct wraps the standard `http.Response` returned by the API and provides
+  additional fields for easier access to response data and potential errors.
+	* `Content`: The response body bytes.
+	* `Message`: A user-friendly message extracted from the response (if available).
+	* `Errors`: A list of `Error` structs containing details about any API errors encountered.
+* **Error:** This struct represents a single API error with a `Message` field containing the error
+  description.
+
+These types are used throughout the library to handle successful responses and API errors
+consistently.
 
 ## Development
 
@@ -251,7 +274,8 @@ This will install all dependencies and set up the project for development.
 
 ### Payload Dev Env
 
-Within the `./dev` directory, you will find a local instance of Payload CMS that can be used for testing the client.
+Within the `./dev` directory, you will find a local instance of Payload CMS that can be used for
+testing the client.
 To get setup with Payload, simply follow the steps below.
 
 Copy the environment file and replace where necessary. The `postgres-db` adapater is currently being
@@ -269,7 +293,9 @@ pnpm run dev
 
 ## TODOs
 
-- Authentication Service
+- Auth - https://payloadcms.com/docs/rest-api/overview#auth-operations
+- Preferences:    https://payloadcms.com/docs/rest-api/overview#preferences
+- Finish E2E Tests under `/tests` directory using `dockertest`
 
 ## Contributing
 
