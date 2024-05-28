@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="./res/symbol.png" height="86">
+  <img src="./res/payload-logo.jpg" height="86">
 </p>
 
 <p align="center">
     <a href="https://ainsley.dev">
-        <h2 align="center">Go Payload</h2>
+        <h2 align="center">Go Payload CMS</h2>
 		<p align="center">GoLang client library & SDK for Payload CMS</p>
     </a>
 </p>
@@ -33,34 +33,40 @@ go get -u github.com/ainsleyclark/go-payloadcms
 
 ```go
 type User struct {
-	ID    int    `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
+ID    int    `json:"id"`
+Email string `json:"email"`
+Name  string `json:"name"`
 }
 
 func main() {
-	client, err := payloadcms.New(
-		payloadcms.WithBaseURL("http://localhost:8080"),
-		payloadcms.WithAPIKey("api-key"),
-	)
+client, err := payloadcms.New(
+payloadcms.WithBaseURL("http://localhost:8080"),
+payloadcms.WithAPIKey("api-key"),
+)
 
-	if err != nil {
-		log.Fatalln(err)
-	}
+if err != nil {
+log.Fatalln(err)
+}
 
-	var users payloadcms.ListResponse[User]
-	resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &users)
-	if err != nil {
-		log.Fatalln(err)
-	}
+var users payloadcms.ListResponse[User]
+resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &users)
+if err != nil {
+log.Fatalln(err)
+}
 
-	fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
+fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
 }
 ```
 
+## Docs
+
+Documentation can be found at
+the [Go Docs](https://pkg.go.dev/github.com/ainsleyclark/go-payloadcms), but we have included a
+kick-start guide below to get you started.
+
 ## Services
 
-The client provides the services as defined below. 
+The client provides the services as defined below.
 
 - Collections
 - Globals
@@ -118,6 +124,7 @@ var user User // Any struct representing the updated entity.
 resp, err := client.Collections.UpdateByID(context.Background(), "users", 1, user)
 if err != nil {
 	fmt.Println(err)
+	return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
@@ -179,7 +186,6 @@ if err != nil {
 media := &payloadcms.CreateResponse[Media]{}
 _, err = m.payload.Media.UploadFromURL(ctx, file, Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
 	Collection:       "media",
-	FileNameOverride: strings.ToLower(strings.ReplaceAll(opts.FileNameOverride, " ", "-")),
 })
 
 if err != nil {
@@ -194,7 +200,6 @@ if err != nil {
 media := &payloadcms.CreateResponse[Media]{}
 _, err = m.payload.Media.UploadFromURL(ctx, "https://payloadcms.com/picture-of-cat.jpg", Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
 	Collection:       "media",
-	FileNameOverride: strings.ToLower(strings.ReplaceAll(opts.FileNameOverride, " ", "-")),
 })
 
 if err != nil {
@@ -216,17 +221,17 @@ They provide mock implementations of all the services provided by the client for
 func TestPayload(t *testing.T) {
 	// Create a new mock collection service
 	mockCollectionService := payloadfakes.NewMockCollectionService()
-
+	
 	// Define the behavior of the FindByID method
-	mockCollectionService.FindByIDFunc = func(ctx context.Context, 
-		collection payloadcms.Collection, 
-		id int, 
+	mockCollectionService.FindByIDFunc = func (ctx context.Context,
+		collection payloadcms.Collection,
+		id int,
 		out any,
 	) (payloadcms.Response, error) {
-	    // Custom logic for the mock implementation
-	    return payloadcms.Response{}, nil
+		// Custom logic for the mock implementation
+		return payloadcms.Response{}, nil
 	}
-
+	
 	// Use the mock collection service in your tests
 	myFunctionUsingCollectionService(mockCollectionService)
 }
@@ -234,25 +239,51 @@ func TestPayload(t *testing.T) {
 
 ## Development
 
-TODO
+### Setup
+
+To get set up with Go Payload simply clone the repo and run the following:
+
+```bash
+make setup
+```
+
+This will install all dependencies and set up the project for development.
+
+### Payload Dev Env
+
+Within the `./dev` directory, you will find a local instance of Payload CMS that can be used for testing the client.
+To get setup with Payload, simply follow the steps below.
+
+Copy the environment file and replace where necessary. The `postgres-db` adapater is currently being
+used for the database.
+
+```bash
+cp .env.example .env
+```
+
+Then run the Payload instance like you would any other installation.
+
+```bash
+pnpm run dev
+```
 
 ## TODOs
 
 - Authentication Service
 
-Contributing
+## Contributing
+
 Contributions are welcome! If you find any bugs or have suggestions for improvement, please open an
 issue or submit a pull request.
 
 ## Open Source
 
 [ainsley.dev](https://ainsley.dev) permits the use of any code found within the repository for use
-with external
-projects.
+with external projects.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Trademark
 
