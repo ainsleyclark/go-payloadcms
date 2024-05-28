@@ -42,7 +42,7 @@ type MediaOptions struct {
 
 // Upload uploads a file to the media endpoint.
 func (s MediaServiceOp) Upload(ctx context.Context, f *os.File, in, out any, opts MediaOptions) (Response, error) {
-	values, err := getUploadValues(f, in)
+	values, err := fileUploadValues(f, in)
 	if err != nil {
 		return Response{}, err
 	}
@@ -75,7 +75,7 @@ func (s MediaServiceOp) UploadFromURL(ctx context.Context, url string, in, out a
 		return Response{}, fmt.Errorf("failed to write to temporary file: %v", err)
 	}
 
-	values, err := getUploadValues(tmpfile, in)
+	values, err := fileUploadValues(tmpfile, in)
 	if err != nil {
 		return Response{}, err
 	}
@@ -128,7 +128,7 @@ func (s MediaServiceOp) uploadFile(ctx context.Context, values map[string]io.Rea
 	return s.Client.DoWithRequest(ctx, req, out)
 }
 
-func getUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
+func fileUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
 	if f == nil {
 		return nil, fmt.Errorf("file is required")
 	}
@@ -154,15 +154,8 @@ func getUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
 
 // handleFileUpload adds a file to the multipart writer.
 func handleFileUpload(w *multipart.Writer, key string, f *os.File, opts MediaOptions) error {
-	// Open the file to read its contents and detect the MIME type.
-	file, err := os.Open(f.Name())
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
 	// Read the first 512 bytes to detect the MIME type.
-	mime, err := mimetype.DetectFile(file.Name())
+	mime, err := mimetype.DetectReader(f) // Only tested with mimetype.DetectFile
 	if err != nil {
 		return err
 	}
@@ -186,7 +179,7 @@ func handleFileUpload(w *multipart.Writer, key string, f *os.File, opts MediaOpt
 	}
 
 	// Copy the remaining file contents to the form part
-	_, err = io.Copy(fw, file)
+	_, err = io.Copy(fw, f)
 	return err
 }
 
@@ -196,8 +189,13 @@ func fileNameFromURL(url string) string {
 	// Get the last part of the URL which contains the filename
 	filenameWithExtension := parts[len(parts)-1]
 
-	// Extract the filename from filenameWithExtension
-	filename := path.Base(filenameWithExtension)
+	// Check if the last part contains a dot indicating an extension
+	if strings.Contains(filenameWithExtension, ".") {
+		// Extract the filename from filenameWithExtension
+		filename := path.Base(filenameWithExtension)
+		return filename
+	}
 
-	return filename
+	// If no dot is found, return an empty string
+	return ""
 }
