@@ -3,6 +3,8 @@ package payloadfakes
 import (
 	"context"
 	"os"
+
+	"github.com/ainsleyclark/go-payloadcms"
 )
 
 // MockMediaService is a mock implementation of the MediaService interface.

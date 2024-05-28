@@ -2,6 +2,8 @@ package payloadfakes
 
 import (
 	"context"
+
+	"github.com/ainsleyclark/go-payloadcms"
 )
 
 // MockGlobalsService is a mock implementation of the GlobalsService interface.
