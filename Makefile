@@ -15,7 +15,7 @@ format: # Format all code
 excluded := grep -v /gen/ | grep -v /fakes/ | grep -v /tests/ | grep -v /dev/
 
 test: # Run all tests with race detection and coverage
-	go test ./... -race $$(go list ./... | $(excluded)) -coverprofile=../../coverage.out -covermode=atomic
+	go test -race -coverprofile=coverage.out -covermode=atomic $$(go list ./... | $(excluded)) ./...
 .PHONY: test
 
 generate: # Runs go generate
