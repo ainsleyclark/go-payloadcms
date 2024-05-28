@@ -91,8 +91,8 @@ func TestMediaService_Upload(t *testing.T) {
 		defer clean()
 		AssertNoError(t, err)
 
-		client, teardown := Setup(t, func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusInternalServerError)
+		client, teardown := Setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
 		})
 		defer teardown()
 
@@ -108,8 +108,8 @@ func TestMediaService_UploadFromURL(t *testing.T) {
 	t.Run("Client Error", func(t *testing.T) {
 		t.Parallel()
 
-		client, teardown := Setup(t, func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusInternalServerError)
+		client, teardown := Setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
 		})
 		defer teardown()
 
@@ -121,9 +121,9 @@ func TestMediaService_UploadFromURL(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
 		t.Parallel()
 
-		client, teardown := Setup(t, func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusOK)
-			_, err := writer.Write(defaultBody)
+		client, teardown := Setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, err := w.Write(defaultBody)
 			AssertNoError(t, err)
 		})
 		defer teardown()
