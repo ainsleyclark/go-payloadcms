@@ -68,10 +68,10 @@ func startPostgresDB(pool *dockertest.Pool, network *dockertest.Network) (*docke
 		},
 	}, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
-		//config.AutoRemove = true
-		//config.RestartPolicy = docker.RestartPolicy{
-		//	Name: "no",
-		//}
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{
+			Name: "no",
+		}
 	})
 	if err != nil {
 		fmt.Printf("Could not start Mongodb: %v \n", err)
@@ -105,8 +105,6 @@ func startPostgresDB(pool *dockertest.Pool, network *dockertest.Network) (*docke
 func startPayloadCMS(pool *dockertest.Pool, network *dockertest.Network, dbURL string) (*dockertest.Resource, error) {
 	fmt.Println("Starting Payload CMS")
 
-	fmt.Println()
-
 	resource, err := pool.BuildAndRunWithOptions("../dev/Dockerfile", &dockertest.RunOptions{
 		Hostname: "payload",
 		Name:     "payload",
@@ -117,6 +115,12 @@ func startPayloadCMS(pool *dockertest.Pool, network *dockertest.Network, dbURL s
 			),
 			"PAYLOAD_SECRET=secret",
 		},
+	}, func(config *docker.HostConfig) {
+		// set AutoRemove to true so that stopped container goes away by itself
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{
+			Name: "no",
+		}
 	})
 	if err != nil {
 		fmt.Printf("Could not start Payload CMS: %v \n", err)

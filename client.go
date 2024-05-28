@@ -114,17 +114,19 @@ func (e Errors) Error() string {
 //
 // Errors occur in the eventuality if the http.StatusCode is not 2xx.
 func (c *Client) Do(ctx context.Context, method, path string, body any, v any) (Response, error) {
+	defR := Response{
+		Response: &http.Response{},
+	}
+
 	buf, err := json.Marshal(body)
 	if err != nil {
-		return Response{}, err
+		return defR, err
 	}
 
 	uri := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
 	req, err := http.NewRequestWithContext(ctx, method, uri, bytes.NewReader(buf))
 	if err != nil {
-		return Response{
-			Response: &http.Response{},
-		}, err
+		return defR, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")

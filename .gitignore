@@ -57,3 +57,6 @@ coverage.out
 
 # Other
 tmp
+
+# Payload
+media/**

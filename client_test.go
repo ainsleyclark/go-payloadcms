@@ -83,17 +83,23 @@ func TestClientDo(t *testing.T) {
 	tt := map[string]struct {
 		method   string
 		path     string
+		body     any
 		wantCode int
 		wantBody []byte
 		wantErr  bool
 	}{
+		"Marshal error": {
+			body:    make(chan int),
+			wantErr: true,
+		},
 		"Bad request": {
 			method:  "INVALID",
 			path:    "@£$%&*()",
 			wantErr: true,
 		},
 		"Do error": {
-			path:    "@£$%&*()",
+			path:    "wrong",
+			method:  "H",
 			wantErr: true,
 		},
 		"200 OK": {
@@ -124,17 +130,10 @@ func TestClientDo(t *testing.T) {
 			client, teardown := Setup(t, defaultHandler(t))
 			defer teardown()
 
-			response, err := client.Do(context.TODO(), test.method, test.path, nil, nil)
-
-			if test.wantErr != (err != nil) {
-				t.Errorf("expected error: %v, got: %v", test.wantErr, err != nil)
-			}
-			if response.StatusCode != test.wantCode {
-				t.Errorf("expected status code: %d, got: %d", test.wantCode, response.StatusCode)
-			}
-			if string(response.Content) != string(test.wantBody) {
-				t.Errorf("expected body: %s, got: %s", string(test.wantBody), string(response.Content))
-			}
+			response, err := client.Do(context.TODO(), test.method, test.path, test.body, nil)
+			AssertEqual(t, test.wantErr, err != nil)
+			AssertEqual(t, test.wantCode, response.StatusCode)
+			AssertEqual(t, string(test.wantBody), string(response.Content))
 		})
 	}
 }

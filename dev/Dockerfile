@@ -1,13 +1,16 @@
 FROM node:18.12 as base
 
+RUN npm install -g pnpm
+
 FROM base as builder
 
 WORKDIR /home/node/app
 COPY package*.json ./
 
 COPY . .
-RUN npm install
-RUN npm run build
+RUN pnpm install
+RUN pnpm run build
+RUN pnpm run payload migrate
 
 FROM base as runtime
 
@@ -17,7 +20,7 @@ ENV PAYLOAD_CONFIG_PATH=dist/payload.config.js
 WORKDIR /home/node/app
 COPY package*.json  ./
 
-RUN npm install
+RUN pnpm install
 COPY --from=builder /home/node/app/dist ./dist
 COPY --from=builder /home/node/app/build ./build
 

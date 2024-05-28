@@ -6,8 +6,7 @@ import { buildConfig } from 'payload/config';
 import {Users} from './collections/Users';
 import {Posts} from './collections/Posts';
 import {Settings} from "./globals/Settings";
-
-console.log('DATABASE_URI', process.env.DATABASE_URI);
+import {Media} from "./collections/Media";
 
 export default buildConfig({
 	admin: {
@@ -18,6 +17,7 @@ export default buildConfig({
 	collections: [
 		Users,
 		Posts,
+		Media,
 	],
 	globals: [
 		Settings,
