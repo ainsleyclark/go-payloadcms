@@ -9,6 +9,8 @@ import (
 )
 
 func TestCollectionsService(t *testing.T) {
+	t.Parallel()
+
 	collection := Collection("posts")
 
 	tt := map[string]struct {
@@ -66,6 +68,8 @@ func TestCollectionsService(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			client, teardown := Setup(t, func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 				_, err := w.Write(defaultBody)
@@ -82,6 +86,8 @@ func TestCollectionsService(t *testing.T) {
 	}
 
 	t.Run("List returns error on QueryValues", func(t *testing.T) {
+		t.Parallel()
+
 		client, teardown := Setup(t, defaultHandler(t))
 		defer teardown()
 		client.queryValues = func(_ any) (url.Values, error) {

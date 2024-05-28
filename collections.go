@@ -6,8 +6,6 @@ import (
 	"net/http"
 )
 
-//go:generate mockgen -package=payloadfakes -destination=payloadfakes/collection.go . CollectionService
-
 // CollectionService is an interface for interacting with the collection
 // endpoints of the Payload API.
 //

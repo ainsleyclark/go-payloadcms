@@ -14,6 +14,19 @@ import (
 	"github.com/google/go-querystring/query"
 )
 
+// Service is an interface that defines common methods for interacting
+// with the Payload API.
+//
+// See: https://payloadcms.com/docs/rest-api/overview
+type Service interface {
+	Do(ctx context.Context, method, path string, body any, v any) (Response, error)
+	DoWithRequest(ctx context.Context, req *http.Request, v any) (Response, error)
+	Get(ctx context.Context, path string, v any) (Response, error)
+	Post(ctx context.Context, path string, in any) (Response, error)
+	Put(ctx context.Context, path string, in any) (Response, error)
+	Delete(ctx context.Context, path string, v any) (Response, error)
+}
+
 // Client represents a Payload CMS client.
 // For more information, see https://payloadcms.com/docs/api.
 type Client struct {
@@ -84,9 +97,9 @@ func (c *Client) validate() error {
 // body bytes.
 type Response struct {
 	*http.Response
-	Content []byte
-	Message string
-	Errors  Errors
+	Content []byte `json:"-"`
+	Message string `json:"-"`
+	Errors  Errors `json:"errors"`
 }
 
 // Errors defines a list of Payload API errors.
@@ -96,7 +109,7 @@ type Errors []Error
 
 // Error defines a singular API error.
 type Error struct {
-	Message string
+	Message string `json:"message"`
 }
 
 // Error implements the error interface to return the error message.
@@ -232,13 +245,14 @@ func (c *Client) performRequest(req *http.Request) (Response, error) {
 	r.Content = buf
 
 	if !is2xx(resp.StatusCode) {
-		if err := json.Unmarshal(buf, &r.Errors); err != nil {
+		if err := json.Unmarshal(buf, &r); err != nil {
 			return r, errors.New("failed to unmarshal error response: " + err.Error())
 		}
 		return r, fmt.Errorf("unexpected status code: %d, errors: %v",
 			resp.StatusCode,
 			r.Errors,
 		)
+
 	}
 
 	return r, nil

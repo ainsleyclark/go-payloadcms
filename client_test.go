@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/go-querystring/query"
@@ -12,8 +13,11 @@ import (
 
 var (
 	defaultBody     = []byte(`{"id": 1, "name": "John Doe"}`)
-	defaultResource = Resource{ID: 1, Name: "John Doe"}
-	defaultHandler  = func(t *testing.T) http.HandlerFunc {
+	defaultResource = Resource{
+		ID:   1,
+		Name: "John Doe",
+	}
+	defaultHandler = func(t *testing.T) http.HandlerFunc {
 		t.Helper()
 
 		return func(w http.ResponseWriter, _ *http.Request) {
@@ -80,62 +84,131 @@ func TestNew(t *testing.T) {
 }
 
 func TestClientDo(t *testing.T) {
-	tt := map[string]struct {
-		method   string
-		path     string
-		body     any
-		wantCode int
-		wantBody []byte
-		wantErr  bool
-	}{
-		"Marshal error": {
-			body:    make(chan int),
-			wantErr: true,
-		},
-		"Bad request": {
-			method:  "INVALID",
-			path:    "@£$%&*()",
-			wantErr: true,
-		},
-		"Do error": {
-			path:    "wrong",
-			method:  "H",
-			wantErr: true,
-		},
-		"200 OK": {
-			method:   http.MethodGet,
-			path:     "/users/1",
-			wantCode: http.StatusOK,
-			wantBody: defaultBody,
-			wantErr:  false,
-		},
-		//"404 Not Found": {
-		//	method:   http.MethodGet,
-		//	path:     "/nonexistent",
-		//	wantCode: http.StatusNotFound,
-		//	wantBody: defaultBody,
-		//	wantErr:  true,
-		//},
-		//"500 Internal Server Error": {
-		//	method:   http.MethodGet,
-		//	path:     "/error",
-		//	wantCode: http.StatusInternalServerError,
-		//	wantBody: defaultBody,
-		//	wantErr:  true,
-		//},
-	}
+	t.Parallel()
 
-	for name, test := range tt {
-		t.Run(name, func(t *testing.T) {
-			client, teardown := Setup(t, defaultHandler(t))
-			defer teardown()
+	t.Run("Marshal error", func(t *testing.T) {
+		t.Parallel()
 
-			response, err := client.Do(context.TODO(), test.method, test.path, test.body, nil)
-			AssertEqual(t, test.wantErr, err != nil)
-			AssertEqual(t, test.wantCode, response.StatusCode)
-			AssertEqual(t, string(test.wantBody), string(response.Content))
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		resp, err := client.Do(context.TODO(), http.MethodGet, client.baseURL, make(chan int), nil)
+		AssertError(t, err)
+		AssertEqual(t, resp.Response != nil, true)
+	})
+
+	t.Run("New Request Error", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		resp, err := client.Do(context.TODO(), http.MethodGet, "@£$%&*()", nil, nil)
+		AssertError(t, err)
+		AssertEqual(t, resp.Response != nil, true)
+	})
+
+	t.Run("Unmarshalls OK", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		var r Resource
+		resp, err := client.Do(context.TODO(), http.MethodGet, client.baseURL, nil, &r)
+		AssertNoError(t, err)
+		AssertEqual(t, defaultResource, r)
+		AssertEqual(t, string(defaultBody), string(resp.Content))
+	})
+
+	t.Run("Read Error", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+		client.reader = func(_ io.Reader) ([]byte, error) {
+			return nil, io.ErrUnexpectedEOF
+		}
+
+		_, err := client.Do(context.TODO(), http.MethodGet, client.baseURL, nil, nil)
+		AssertError(t, err)
+		AssertEqual(t, io.ErrUnexpectedEOF, err)
+	})
+
+	t.Run("Bad Request", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusBadRequest)
+			_, err := w.Write([]byte(`{"errors":[{"message":"You are not allowed to perform this action."}] }`))
+			AssertNoError(t, err)
 		})
-	}
+		defer teardown()
+
+		resp, err := client.Do(context.TODO(), http.MethodGet, client.baseURL, nil, nil)
+		AssertError(t, err)
+		AssertEqual(t, 400, resp.StatusCode)
+		AssertEqual(t, "You are not allowed to perform this action.", resp.Errors[0].Message)
+		AssertEqual(t, "unexpected status code: 400, errors: You are not allowed to perform this action.", err.Error())
+	})
+
+	t.Run("Unmarshal Errors from Response", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusBadRequest)
+			_, err := w.Write([]byte(`wrong`))
+			AssertNoError(t, err)
+		})
+		defer teardown()
+
+		resp, err := client.Do(context.TODO(), http.MethodGet, client.baseURL, nil, nil)
+		AssertError(t, err)
+		AssertEqual(t, 400, resp.StatusCode)
+		AssertEqual(t, strings.Contains(err.Error(), "failed to unmarshal error response"), true)
+	})
+}
+
+func TestClientDoWithRequest(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Marshal error", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		_, err := client.DoWithRequest(context.TODO(), &http.Request{}, nil)
+		AssertError(t, err)
+	})
+
+	t.Run("200 OK", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		req, err := http.NewRequest(http.MethodGet, client.baseURL, nil)
+		AssertNoError(t, err)
+
+		_, err = client.DoWithRequest(context.TODO(), req, nil)
+		AssertNoError(t, err)
+	})
+
+	t.Run("Unmarshalls OK", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		req, err := http.NewRequest(http.MethodGet, client.baseURL, nil)
+		AssertNoError(t, err)
+		var r Resource
+		_, err = client.DoWithRequest(context.TODO(), req, &r)
+
+		AssertNoError(t, err)
+		AssertEqual(t, defaultResource, r)
+	})
 }
 
 func TestClient_Requests(t *testing.T) {
@@ -187,10 +260,14 @@ func TestClient_Requests(t *testing.T) {
 }
 
 func TestClient_NewRequest(t *testing.T) {
-	c := Client{apiKey: "123"}
+	t.Parallel()
 
 	t.Run("OK", func(t *testing.T) {
+		t.Parallel()
+
+		c := Client{apiKey: "123"}
 		got, err := c.NewRequest(context.TODO(), http.MethodGet, "/users/1", nil)
+
 		AssertNoError(t, err)
 		AssertEqual(t, http.MethodGet, got.Method)
 		AssertEqual(t, "application/json", got.Header.Get("Content-Type"))
@@ -198,21 +275,40 @@ func TestClient_NewRequest(t *testing.T) {
 	})
 
 	t.Run("Error", func(t *testing.T) {
+		t.Parallel()
+
+		c := Client{apiKey: "123"}
 		_, err := c.NewRequest(context.TODO(), http.MethodGet, "@£$%", nil)
 		AssertError(t, err)
 	})
 }
 
 func TestClient_NewFormRequest(t *testing.T) {
-	c := Client{apiKey: "123"}
-	got, err := c.NewFormRequest(context.TODO(), http.MethodGet, "/users/1", nil, "multipart/form-data")
-	AssertNoError(t, err)
-	AssertEqual(t, http.MethodGet, got.Method)
-	AssertEqual(t, "multipart/form-data", got.Header.Get("Content-Type"))
-	AssertEqual(t, "users API-Key 123", got.Header.Get("Authorization"))
+	t.Parallel()
+
+	t.Run("OK", func(t *testing.T) {
+		t.Parallel()
+
+		c := Client{apiKey: "123"}
+		got, err := c.NewFormRequest(context.TODO(), http.MethodGet, "/users/1", nil, "multipart/form-data")
+
+		AssertNoError(t, err)
+		AssertEqual(t, http.MethodGet, got.Method)
+		AssertEqual(t, "multipart/form-data", got.Header.Get("Content-Type"))
+		AssertEqual(t, "users API-Key 123", got.Header.Get("Authorization"))
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		t.Parallel()
+
+		c := Client{apiKey: "123"}
+		_, err := c.NewFormRequest(context.TODO(), http.MethodGet, "@£$%", nil, "multipart/form-data")
+		AssertError(t, err)
+	})
 }
 
 func TestErrors_Error(t *testing.T) {
+	t.Parallel()
 	err := Errors{
 		{Message: "error 1"},
 		{Message: "error 2"},

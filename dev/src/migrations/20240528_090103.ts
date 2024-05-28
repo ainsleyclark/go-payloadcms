@@ -2,7 +2,7 @@ import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
 import { sql } from 'drizzle-orm'
 
 export async function up({ payload }: MigrateUpArgs): Promise<void> {
-await payload.db.drizzle.execute(sql`
+	await payload.db.drizzle.execute(`
 
 CREATE TABLE IF NOT EXISTS "users" (
 	"id" serial PRIMARY KEY NOT NULL,
@@ -102,14 +102,5 @@ END $$;
 };
 
 export async function down({ payload }: MigrateDownArgs): Promise<void> {
-await payload.db.drizzle.execute(sql`
-
-DROP TABLE "users";
-DROP TABLE "posts";
-DROP TABLE "media";
-DROP TABLE "payload_preferences";
-DROP TABLE "payload_preferences_rels";
-DROP TABLE "payload_migrations";
-DROP TABLE "settings";`);
 
 };

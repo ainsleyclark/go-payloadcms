@@ -7,6 +7,8 @@ import (
 )
 
 func TestGlobalsService(t *testing.T) {
+	t.Parallel()
+
 	global := Global("settings")
 
 	tt := map[string]struct {
@@ -29,6 +31,8 @@ func TestGlobalsService(t *testing.T) {
 
 	for name, test := range tt {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			client, teardown := Setup(t, func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 				_, err := w.Write(defaultBody)
