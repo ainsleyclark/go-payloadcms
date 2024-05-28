@@ -33,28 +33,28 @@ go get -u github.com/ainsleyclark/go-payloadcms
 
 ```go
 type User struct {
-ID    int    `json:"id"`
-Email string `json:"email"`
-Name  string `json:"name"`
+	ID    int    `json:"id"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
 func main() {
-client, err := payloadcms.New(
-payloadcms.WithBaseURL("http://localhost:8080"),
-payloadcms.WithAPIKey("api-key"),
-)
+	client, err := payloadcms.New(
+		payloadcms.WithBaseURL("http://localhost:8080"),
+		payloadcms.WithAPIKey("api-key"),
+	)
+	
+	if err != nil {
+		log.Fatalln(err)
+	}
+	
+	var users payloadcms.ListResponse[User]
+	resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &users)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
-if err != nil {
-log.Fatalln(err)
-}
-
-var users payloadcms.ListResponse[User]
-resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{}, &users)
-if err != nil {
-log.Fatalln(err)
-}
-
-fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
+	fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
 }
 ```
 
