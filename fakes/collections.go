@@ -2,8 +2,6 @@ package payloadfakes
 
 import (
 	"context"
-
-	"github.com/ainsleydev/go-payloadcms"
 )
 
 // MockCollectionService is a mock implementation of the CollectionService interface.

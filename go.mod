@@ -1,4 +1,4 @@
-module github.com/ainsleydev/go-payloadcms
+module github.com/ainsleyclark/go-payloadcms
 
 go 1.22.3
 

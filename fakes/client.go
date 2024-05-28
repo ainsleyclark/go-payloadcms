@@ -3,8 +3,6 @@ package payloadfakes
 import (
 	"context"
 	"net/http"
-
-	"github.com/ainsleydev/go-payloadcms"
 )
 
 // MockService is a mock implementation of the Service interface.
