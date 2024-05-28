@@ -71,20 +71,19 @@ The client provides the services as defined below.
 The collections service provides methods to interact with the collections in Payload CMS.
 For more information please visit the docs [here](https://payloadcms.com/docs/api/collections).
 
-**FindByID**
-
-FindByID finds a collection entity by its ID.
+#### FindByID
 
 ```go
 var user User // Any struct that conforms to your collection schema.
 resp, err := client.Collections.FindByID(context.Background(), "users", 1, &user)
 if err != nil {
-	// Handle error
+	fmt.Println(err)
+	return
 }
 // Have access to user
 ```
 
-**List**
+#### List
 
 ```go
 var users payloadcms.ListResponse[User] // Must use ListResponse with generic type.
@@ -94,43 +93,115 @@ resp, err := client.Collections.List(context.Background(), "users", payloadcms.L
 	Page:  1,
 }
 if err != nil {
-	// Handle error
+	fmt.Println(err)
+	return
 }
 // Have access to users
 ```
 
-**Create**
+#### Create
 
 ```go
 var user User // Any struct representing the entity to be created.
 resp, err := client.Collections.Create(context.Background(), "users", user)
 if err != nil {
-	// Handle error
+	fmt.Println(err)
+	return
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
 
-**UpdateByID**
+#### UpdateByID
 
 ```go
 var user User // Any struct representing the updated entity.
 resp, err := client.Collections.UpdateByID(context.Background(), "users", 1, user)
 if err != nil {
-	// Handle error
+	fmt.Println(err)
 }
 fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
 ```
 
-**DeleteByID**
+#### DeleteByID
 
 ```go
 resp, err := client.Collections.DeleteByID(context.Background(), "users", 1)
 if err != nil {
-	// Handle error
+	fmt.Println(err)
+	return
 }
 // Use response data as needed
 ```
 
+### Globals
+
+The globals service provides methods to interact with the globals in Payload CMS.
+For more information please visit the docs [here](https://payloadcms.com/docs/api/globals).
+
+#### Get
+
+```go
+var settings Settings // Any struct representing a global type.
+resp, err := client.Globals.Get(context.Background(), "settings", &settings)
+if err != nil {
+	fmt.Println(err)
+	return
+}
+// Have access to settings
+```
+
+#### Update
+
+```go
+var settings Settings // Any struct representing a global type.
+resp, err := client.Globals.Update(context.Background(), "global-slug", updatedData)
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println(string(resp.Content)) // Can unmarshal into response struct if needed.
+```
+
+### Media
+
+The media service provides methods to upload media types to Payload CMS.
+For more information please visit the docs [here](https://payloadcms.com/docs/upload/overview).
+
+#### Upload
+
+```go
+file, err := os.Open("path/to/file")
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+media := &payloadcms.CreateResponse[Media]{}
+_, err = m.payload.Media.UploadFromURL(ctx, file, Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
+	Collection:       "media",
+	FileNameOverride: strings.ToLower(strings.ReplaceAll(opts.FileNameOverride, " ", "-")),
+})
+
+if err != nil {
+	fmt.Println(err)
+	return
+}
+```
+
+#### UploadFromURL
+
+```go
+media := &payloadcms.CreateResponse[Media]{}
+_, err = m.payload.Media.UploadFromURL(ctx, "https://payloadcms.com/picture-of-cat.jpg", Media{Alt: "alt"}, &media, payloadcms.MediaOptions{
+	Collection:       "media",
+	FileNameOverride: strings.ToLower(strings.ReplaceAll(opts.FileNameOverride, " ", "-")),
+})
+
+if err != nil {
+	fmt.Println(err)
+	return
+}
+```
 
 ## Mocks
 
