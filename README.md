@@ -38,6 +38,10 @@ go get -u github.com/ainsleyclark/go-payloadcms
 ## Quick Start
 
 ```go
+import (
+	"github.com/ainsleyclark/go-payloadcms"
+)
+
 type Entity struct {
 	ID    int    `json:"id"`
 	Email string `json:"email"`
