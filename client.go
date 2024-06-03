@@ -163,7 +163,7 @@ func (c *Client) Do(ctx context.Context, method, path string, body any, v any) (
 func (c *Client) DoWithRequest(_ context.Context, req *http.Request, v any) (Response, error) {
 	r, err := c.performRequest(req)
 	if err != nil {
-		return Response{}, err
+		return r, err
 	}
 	if v == nil {
 		return r, nil
@@ -232,7 +232,7 @@ func (c *Client) NewFormRequest(ctx context.Context, method, path string, body i
 func (c *Client) performRequest(req *http.Request) (Response, error) {
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return Response{Response: resp}, err
+		return Response{Response: &http.Response{}}, err
 	}
 	defer resp.Body.Close()
 
@@ -240,7 +240,7 @@ func (c *Client) performRequest(req *http.Request) (Response, error) {
 
 	buf, err := c.reader(resp.Body)
 	if err != nil {
-		return Response{}, err
+		return r, err
 	}
 	r.Content = buf
 
