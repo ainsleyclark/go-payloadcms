@@ -131,6 +131,10 @@ func (c *Client) Do(ctx context.Context, method, path string, body any, v any) (
 		Response: &http.Response{},
 	}
 
+	if body == nil {
+		body = make(map[string]any)
+	}
+
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return defR, err
