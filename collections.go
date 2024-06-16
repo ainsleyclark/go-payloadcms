@@ -89,7 +89,7 @@ func (s CollectionServiceOp) FindByID(ctx context.Context, collection Collection
 // If you want to use this endpoint, you'll need to add an express handler
 // to your Payload config.
 func (s CollectionServiceOp) FindBySlug(ctx context.Context, collection Collection, slug string, out any) (Response, error) {
-	path := fmt.Sprintf("/api/%s/%s", collection, slug)
+	path := fmt.Sprintf("/api/%s/slug/%s", collection, slug)
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
 
