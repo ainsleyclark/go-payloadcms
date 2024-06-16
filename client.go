@@ -256,7 +256,6 @@ func (c *Client) performRequest(req *http.Request) (Response, error) {
 			resp.StatusCode,
 			r.Errors,
 		)
-
 	}
 
 	return r, nil
