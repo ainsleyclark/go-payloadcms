@@ -29,7 +29,7 @@ func TestCollectionsService(t *testing.T) {
 			call: func(s CollectionService) (Response, error) {
 				return s.FindBySlug(context.Background(), collection, "slug", nil)
 			},
-			wantURL:    "/api/posts/slug",
+			wantURL:    "/api/posts/slug/slug",
 			wantMethod: http.MethodGet,
 		},
 		"List": {
