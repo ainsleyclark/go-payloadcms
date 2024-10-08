@@ -3,6 +3,7 @@ package payloadcms
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -11,7 +12,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
@@ -133,20 +133,15 @@ func fileUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
 		return nil, fmt.Errorf("file is required")
 	}
 
-	values := map[string]io.Reader{
-		"file": f,
+	// Marshal the `in` struct to JSON for the _payload field
+	payloadJSON, err := json.Marshal(v)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal input struct: %v", err)
 	}
 
-	// If 'in' is a struct, iterate over its fields and get the JSON tags
-	m := reflect.ValueOf(v)
-	if m.Kind() == reflect.Struct {
-		for i := 0; i < m.NumField(); i++ {
-			field := m.Type().Field(i)
-			tag := field.Tag.Get("json")
-			if tag != "" {
-				values[tag] = strings.NewReader(fmt.Sprintf("%v", m.Field(i).Interface()))
-			}
-		}
+	values := map[string]io.Reader{
+		"file":     f,
+		"_payload": strings.NewReader(string(payloadJSON)), // The Payload CMS structure
 	}
 
 	return values, nil
@@ -158,6 +153,11 @@ func handleFileUpload(w *multipart.Writer, key string, f *os.File, opts MediaOpt
 	mime, err := mimetype.DetectReader(f) // Only tested with mimetype.DetectFile
 	if err != nil {
 		return err
+	}
+
+	// Reset the file pointer back to the beginning after MIME detection
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return fmt.Errorf("failed to reset file pointer: %v", err)
 	}
 
 	fileName := f.Name()

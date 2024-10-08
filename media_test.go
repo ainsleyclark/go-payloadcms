@@ -3,6 +3,7 @@ package payloadcms
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"mime/multipart"
@@ -153,19 +154,27 @@ func TestGetUploadValues(t *testing.T) {
 
 		got, err := fileUploadValues(f, mediaData)
 		AssertEqual(t, false, err != nil)
-		AssertEqual(t, 3, len(got))
+		AssertEqual(t, 2, len(got))
 
+		// Test file content
 		file, err := io.ReadAll(got["file"])
 		AssertNoError(t, err)
 		AssertEqual(t, "Payload File", string(file))
 
-		alt, err := io.ReadAll(got["alt"])
+		// Test _payload content
+		payload, err := io.ReadAll(got["_payload"])
 		AssertNoError(t, err)
-		AssertEqual(t, "John Doe", string(alt))
 
-		caption, err := io.ReadAll(got["caption"])
+		// Parse the JSON payload to verify the fields
+		var parsedPayload struct {
+			Alt     string `json:"alt"`
+			Caption string `json:"caption"`
+		}
+		err = json.Unmarshal(payload, &parsedPayload)
 		AssertNoError(t, err)
-		AssertEqual(t, "Hello World", string(caption))
+
+		AssertEqual(t, "John Doe", parsedPayload.Alt)
+		AssertEqual(t, "Hello World", parsedPayload.Caption)
 	})
 }
 
