@@ -170,7 +170,7 @@ func TestGetUploadValues(t *testing.T) {
 			Alt     string `json:"alt"`
 			Caption string `json:"caption"`
 		}
-		err = json.Unmarshal([]byte(payload), &parsedPayload)
+		err = json.Unmarshal(payload, &parsedPayload)
 		AssertNoError(t, err)
 
 		AssertEqual(t, "John Doe", parsedPayload.Alt)
