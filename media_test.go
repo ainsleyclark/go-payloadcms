@@ -85,6 +85,18 @@ func TestMediaService_Upload(t *testing.T) {
 		AssertEqual(t, string(r.Content), string(defaultBody))
 	})
 
+	t.Run("OK With Buffer", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		m := MediaServiceOp{Client: client}
+		r, err := m.Upload(context.TODO(), bytes.NewBuffer([]byte("Payload File")), mediaData, nil, MediaOptions{})
+		AssertNoError(t, err)
+		AssertEqual(t, string(r.Content), string(defaultBody))
+	})
+
 	t.Run("Client Error", func(t *testing.T) {
 		t.Parallel()
 

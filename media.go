@@ -22,7 +22,7 @@ import (
 //
 // See: https://payloadcms.com/docs/upload/overview
 type MediaService interface {
-	Upload(ctx context.Context, f *os.File, in, out any, opts MediaOptions) (Response, error)
+	Upload(ctx context.Context, r io.Reader, in, out any, opts MediaOptions) (Response, error)
 	UploadFromURL(ctx context.Context, url string, in, out any, opts MediaOptions) (Response, error)
 }
 
@@ -41,8 +41,8 @@ type MediaOptions struct {
 }
 
 // Upload uploads a file to the media endpoint.
-func (s MediaServiceOp) Upload(ctx context.Context, f *os.File, in, out any, opts MediaOptions) (Response, error) {
-	values, err := fileUploadValues(f, in)
+func (s MediaServiceOp) Upload(ctx context.Context, r io.Reader, in, out any, opts MediaOptions) (Response, error) {
+	values, err := fileUploadValues(r, in)
 	if err != nil {
 		return Response{}, err
 	}
@@ -128,8 +128,8 @@ func (s MediaServiceOp) uploadFile(ctx context.Context, values map[string]io.Rea
 	return s.Client.DoWithRequest(ctx, req, out)
 }
 
-func fileUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
-	if f == nil {
+func fileUploadValues(r io.Reader, v any) (map[string]io.Reader, error) {
+	if r == nil {
 		return nil, fmt.Errorf("file is required")
 	}
 
@@ -140,7 +140,7 @@ func fileUploadValues(f *os.File, v any) (map[string]io.Reader, error) {
 	}
 
 	values := map[string]io.Reader{
-		"file":     f,
+		"file":     r,
 		"_payload": strings.NewReader(string(payloadJSON)), // The Payload CMS structure
 	}
 
