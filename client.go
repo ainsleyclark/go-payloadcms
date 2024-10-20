@@ -249,6 +249,9 @@ func (c *Client) performRequest(req *http.Request) (Response, error) {
 	r.Content = buf
 
 	if !is2xx(resp.StatusCode) {
+		if string(buf) == "" {
+			return r, errors.New("received no body with status code: " + resp.Status)
+		}
 		if err := json.Unmarshal(buf, &r); err != nil {
 			return r, errors.New("failed to unmarshal error response: " + err.Error())
 		}
