@@ -167,6 +167,19 @@ func TestClientDo(t *testing.T) {
 		AssertEqual(t, 400, resp.StatusCode)
 		AssertEqual(t, strings.Contains(err.Error(), "failed to unmarshal error response"), true)
 	})
+
+	t.Run("No Body", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		})
+		defer teardown()
+
+		_, err := client.Do(context.TODO(), http.MethodGet, client.baseURL, nil, nil)
+		AssertError(t, err)
+		AssertContains(t, err.Error(), "received no body with status code")
+	})
 }
 
 func TestClientDoWithRequest(t *testing.T) {
