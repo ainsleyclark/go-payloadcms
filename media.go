@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -35,9 +35,10 @@ type MediaServiceOp struct {
 type MediaOptions struct {
 	// The collection to upload the media to, defaults to "media"
 	Collection string
-	// If set, the file name of the media will be overridden from the file name.
+	// Required filename for the upload, you do not need to pass the
+	// extension here.
 	// Note, this will not change the file extension.
-	FileNameOverride string
+	FileName string
 }
 
 // Upload uploads a file to the media endpoint.
@@ -62,20 +63,17 @@ func (s MediaServiceOp) UploadFromURL(ctx context.Context, url string, in, out a
 		return Response{}, fmt.Errorf("failed to download file: status code %d", resp.StatusCode)
 	}
 
-	// Create a temporary file to store the downloaded content
-	tmpfile, err := os.Create(filepath.Join(os.TempDir(), fileNameFromURL(url)))
-	if err != nil {
-		return Response{}, fmt.Errorf("failed to create temporary file: %v", err)
-	}
-	defer os.Remove(tmpfile.Name()) // Clean up the temporary file
-
-	// Write the downloaded content to the temporary file
-	_, err = io.Copy(tmpfile, resp.Body)
-	if err != nil {
-		return Response{}, fmt.Errorf("failed to write to temporary file: %v", err)
+	// If filename not provided in options, try to get it from URL
+	if opts.FileName == "" {
+		filename := fileNameFromURL(url)
+		if filename == "" {
+			return Response{}, errors.New("no filename provided and couldn't extract from URL")
+		}
+		// Strip the extension as handleReaderUpload will add the correct one
+		opts.FileName = strings.TrimSuffix(filename, filepath.Ext(filename))
 	}
 
-	values, err := fileUploadValues(tmpfile, in)
+	values, err := fileUploadValues(resp.Body, in)
 	if err != nil {
 		return Response{}, err
 	}
@@ -95,15 +93,11 @@ func (s MediaServiceOp) uploadFile(ctx context.Context, values map[string]io.Rea
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 	for key, r := range values {
-		if x, ok := r.(io.Closer); ok {
-			defer x.Close()
-		}
-		if x, ok := r.(*os.File); ok {
-			if err := handleFileUpload(w, key, x, opts); err != nil {
+		if key == "file" {
+			if err := handleReaderUpload(w, key, r, opts.FileName); err != nil {
 				return Response{}, err
 			}
 		} else {
-			// Add other fields
 			fw, err := w.CreateFormField(key)
 			if err != nil {
 				return Response{}, err
@@ -147,39 +141,47 @@ func fileUploadValues(r io.Reader, v any) (map[string]io.Reader, error) {
 	return values, nil
 }
 
-// handleFileUpload adds a file to the multipart writer.
-func handleFileUpload(w *multipart.Writer, key string, f *os.File, opts MediaOptions) error {
-	// Read the first 512 bytes to detect the MIME type.
-	mime, err := mimetype.DetectReader(f) // Only tested with mimetype.DetectFile
+// / handleReaderUpload adds a reader's content to the multipart writer with proper MIME type detection
+func handleReaderUpload(w *multipart.Writer, key string, r io.Reader, fileName string) error {
+	// Buffer the beginning of the file for MIME detection
+	var buf bytes.Buffer
+	tee := io.TeeReader(r, &buf)
+
+	// Detect MIME type
+	mime, err := mimetype.DetectReader(tee)
+	if err != nil {
+		return fmt.Errorf("failed to detect mime type: %v", err)
+	}
+
+	// If no filename is provided, generate one with the correct extension
+	if fileName == "" {
+		return errors.New("no filename provided")
+	}
+
+	// Check if the filename already has an extension
+	if ext := filepath.Ext(fileName); ext != "" {
+		return fmt.Errorf("filename should not include extension, got: %s", ext)
+	}
+
+	fileName = fileName + mime.Extension()
+
+	// Create the form part with the detected MIME type
+	h := textproto.MIMEHeader{}
+	h.Set("Content-Type", mime.String())
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, key, fileName))
+
+	fw, err := w.CreatePart(h)
 	if err != nil {
 		return err
 	}
 
-	// Reset the file pointer back to the beginning after MIME detection
-	if _, err := f.Seek(0, io.SeekStart); err != nil {
-		return fmt.Errorf("failed to reset file pointer: %v", err)
-	}
-
-	fileName := f.Name()
-	if opts.FileNameOverride != "" {
-		fileName = opts.FileNameOverride + "." + filepath.Ext(f.Name())[1:]
-	}
-
-	// Create a new form part
-	fw, err := w.CreatePart(textproto.MIMEHeader{
-		"Content-Type": {
-			mime.String(),
-		},
-		"Content-Disposition": {
-			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, key, fileName),
-		},
-	})
-	if err != nil {
+	// Write the buffered content first
+	if _, err := io.Copy(fw, &buf); err != nil {
 		return err
 	}
 
-	// Copy the remaining file contents to the form part
-	_, err = io.Copy(fw, f)
+	// Then write the rest of the content
+	_, err = io.Copy(fw, r)
 	return err
 }
 

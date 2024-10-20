@@ -65,7 +65,33 @@ func TestMediaService_Upload(t *testing.T) {
 		defer teardown()
 
 		m := MediaServiceOp{Client: client}
+		_, err := m.Upload(context.TODO(), nil, nil, nil, MediaOptions{
+			FileName: "filename",
+		})
+		AssertError(t, err)
+	})
+
+	t.Run("No File name", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		m := MediaServiceOp{Client: client}
 		_, err := m.Upload(context.TODO(), nil, nil, nil, MediaOptions{})
+		AssertError(t, err)
+	})
+
+	t.Run("With Extension Error", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+
+		m := MediaServiceOp{Client: client}
+		_, err := m.Upload(context.TODO(), strings.NewReader("Payload File"), nil, nil, MediaOptions{
+			FileName: "filename.jpg",
+		})
 		AssertError(t, err)
 	})
 
@@ -80,7 +106,9 @@ func TestMediaService_Upload(t *testing.T) {
 		defer teardown()
 
 		m := MediaServiceOp{Client: client}
-		r, err := m.Upload(context.TODO(), file, mediaData, nil, MediaOptions{})
+		r, err := m.Upload(context.TODO(), file, mediaData, nil, MediaOptions{
+			FileName: "filename",
+		})
 		AssertNoError(t, err)
 		AssertEqual(t, string(r.Content), string(defaultBody))
 	})
@@ -92,7 +120,9 @@ func TestMediaService_Upload(t *testing.T) {
 		defer teardown()
 
 		m := MediaServiceOp{Client: client}
-		r, err := m.Upload(context.TODO(), bytes.NewBuffer([]byte("Payload File")), mediaData, nil, MediaOptions{})
+		r, err := m.Upload(context.TODO(), bytes.NewBuffer([]byte("Payload File")), mediaData, nil, MediaOptions{
+			FileName: "filename",
+		})
 		AssertNoError(t, err)
 		AssertEqual(t, string(r.Content), string(defaultBody))
 	})
@@ -110,7 +140,9 @@ func TestMediaService_Upload(t *testing.T) {
 		defer teardown()
 
 		m := MediaServiceOp{Client: client}
-		_, err = m.Upload(context.TODO(), file, mediaData, nil, MediaOptions{})
+		_, err = m.Upload(context.TODO(), file, mediaData, nil, MediaOptions{
+			FileName: "filename",
+		})
 		AssertError(t, err)
 	})
 }
@@ -142,7 +174,9 @@ func TestMediaService_UploadFromURL(t *testing.T) {
 		defer teardown()
 
 		m := MediaServiceOp{Client: client}
-		r, err := m.UploadFromURL(context.TODO(), "https://example.com", nil, nil, MediaOptions{})
+		r, err := m.UploadFromURL(context.TODO(), "https://example.com", nil, nil, MediaOptions{
+			FileName: "filename",
+		})
 		AssertNoError(t, err)
 		AssertEqual(t, string(r.Content), string(defaultBody))
 	})
@@ -196,20 +230,22 @@ func (m mockErrWriter) Write(_ []byte) (n int, err error) {
 	return 0, errors.New("mock write error")
 }
 
-func TestHandleFileUpload(t *testing.T) {
+func TestHandleReaderUpload(t *testing.T) {
 	t.Parallel()
 
 	t.Run("File Closed", func(t *testing.T) {
+		t.Parallel()
+
 		f, teardown, err := createTestFile(t, []byte("Payload File"))
 		defer teardown()
 		AssertNoError(t, err)
 
 		AssertNoError(t, f.Close())
-		err = handleFileUpload(nil, "file", f, MediaOptions{})
+		err = handleReaderUpload(nil, "file", f, "filename")
 		AssertError(t, err)
 	})
 
-	t.Run("Test", func(t *testing.T) {
+	t.Run("Error", func(t *testing.T) {
 		t.Parallel()
 
 		f, teardown, err := createTestFile(t, []byte("Payload File"))
@@ -217,26 +253,8 @@ func TestHandleFileUpload(t *testing.T) {
 		AssertNoError(t, err)
 
 		w := multipart.NewWriter(&mockErrWriter{})
-		err = handleFileUpload(w, "file", f, MediaOptions{})
+		err = handleReaderUpload(w, "file", f, "filename")
 		AssertError(t, err)
-	})
-
-	t.Run("Correct Override", func(t *testing.T) {
-		t.Parallel()
-
-		f, teardown, err := createTestFile(t, []byte("Payload File"))
-		defer teardown()
-		AssertNoError(t, err)
-
-		body := &bytes.Buffer{}
-		writer := multipart.NewWriter(body)
-
-		err = handleFileUpload(writer, "file.text", f, MediaOptions{
-			FileNameOverride: "hello",
-		})
-		AssertNoError(t, err)
-		AssertNoError(t, writer.Close())
-		AssertEqual(t, true, strings.Contains(body.String(), "hello.txt"))
 	})
 
 	t.Run("MultiPart", func(t *testing.T) {
@@ -249,10 +267,11 @@ func TestHandleFileUpload(t *testing.T) {
 		body := &bytes.Buffer{}
 		writer := multipart.NewWriter(body)
 
-		err = handleFileUpload(writer, "file", tempFile, MediaOptions{})
+		err = handleReaderUpload(writer, "file", tempFile, "filename")
 		AssertNoError(t, err)
 		AssertNoError(t, writer.Close())
 		AssertEqual(t, true, strings.Contains(body.String(), "text/plain; charset=utf-8"))
+		AssertEqual(t, true, strings.Contains(body.String(), "filename.txt"))
 	})
 }
 
