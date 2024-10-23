@@ -196,6 +196,13 @@ func (c *Client) Put(ctx context.Context, path string, in any) (Response, error)
 	return c.Do(ctx, http.MethodPut, path, in, nil)
 }
 
+// Patch sends an HTTP PATCH request and returns the API response.
+// The API response is JSON decoded and stored in the value pointed to by v, or returned
+// as an error if an API error has occurred.
+func (c *Client) Patch(ctx context.Context, path string, in any) (Response, error) {
+	return c.Do(ctx, http.MethodPatch, path, in, nil)
+}
+
 // Delete sends an HTTP DELETE request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.

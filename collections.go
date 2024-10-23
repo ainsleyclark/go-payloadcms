@@ -40,13 +40,6 @@ const (
 const AllItems = 0
 
 type (
-	// ListParams represents additional query parameters for the find endpoint.
-	ListParams struct {
-		Sort  string         `json:"sort" url:"sort"`   // Sort the returned documents by a specific field.
-		Where map[string]any `json:"where" url:"where"` // Constrain returned documents with a where query.
-		Limit int            `json:"limit" url:"limit"` // Limit the returned documents to a certain number.
-		Page  int            `json:"page" url:"page"`   // Get a specific page of documents.
-	}
 	// ListResponse represents a list of entities that is sent back
 	// from the Payload CMS.
 	ListResponse[T any] struct {
@@ -95,11 +88,7 @@ func (s CollectionServiceOp) FindBySlug(ctx context.Context, collection Collecti
 
 // List lists all collection entities.
 func (s CollectionServiceOp) List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error) {
-	v, err := s.Client.queryValues(params)
-	if err != nil {
-		return Response{}, err
-	}
-	path := fmt.Sprintf("/api/%s?%s", collection, v.Encode())
+	path := fmt.Sprintf("/api/%s%s", collection, params.Encode())
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
 
@@ -112,7 +101,7 @@ func (s CollectionServiceOp) Create(ctx context.Context, collection Collection, 
 // UpdateByID updates a collection entity by its ID.
 func (s CollectionServiceOp) UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
-	return s.Client.Do(ctx, http.MethodPut, path, in, nil)
+	return s.Client.Do(ctx, http.MethodPatch, path, in, nil)
 }
 
 // DeleteByID deletes a collection entity by its ID.

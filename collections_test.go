@@ -2,10 +2,10 @@ package payloadcms
 
 import (
 	"context"
-	"errors"
 	"net/http"
-	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCollectionsService(t *testing.T) {
@@ -38,6 +38,7 @@ func TestCollectionsService(t *testing.T) {
 					Sort:  "asc",
 					Limit: 10,
 					Page:  1,
+					Where: Query().Equals("colour", "yellow"),
 				}, nil)
 			},
 			wantURL:    "/api/posts",
@@ -55,7 +56,7 @@ func TestCollectionsService(t *testing.T) {
 				return s.UpdateByID(context.Background(), collection, 1, defaultResource)
 			},
 			wantURL:    "/api/posts/1",
-			wantMethod: http.MethodPut,
+			wantMethod: http.MethodPatch,
 		},
 		"DeleteByID": {
 			call: func(s CollectionService) (Response, error) {
@@ -84,17 +85,51 @@ func TestCollectionsService(t *testing.T) {
 			AssertEqual(t, string(resp.Content), string(defaultBody))
 		})
 	}
+}
 
-	t.Run("List returns error on QueryValues", func(t *testing.T) {
-		t.Parallel()
+func TestListParams_Encode(t *testing.T) {
+	t.Parallel()
 
-		client, teardown := Setup(t, defaultHandler(t))
-		defer teardown()
-		client.queryValues = func(_ any) (url.Values, error) {
-			return nil, errors.New("query error")
-		}
-		client.Collections = CollectionServiceOp{Client: client}
-		_, err := client.Collections.List(context.Background(), collection, ListParams{}, nil)
-		AssertError(t, err)
-	})
+	tests := map[string]struct {
+		input ListParams
+		want  string
+	}{
+		"All fields set": {
+			input: ListParams{
+				Sort:  "name",
+				Where: Query().Equals("colour", "yellow"),
+				Limit: 10,
+				Page:  2,
+			},
+			want: "?sort=name&field=value&where%5Bcolour%5D%5Bequals%5D=yellow&limit=10&page=2",
+		},
+		"Only Sort set": {
+			input: ListParams{
+				Sort: "name",
+			},
+			want: "?sort=name",
+		},
+		"Only Limit and Page set": {
+			input: ListParams{
+				Limit: 5,
+				Page:  3,
+			},
+			want: "?limit=5&page=3",
+		},
+		"No fields set": {
+			input: ListParams{},
+			want:  "",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if test.input.Where != nil {
+				test.input.Where.params.Add("field", "value")
+			}
+			got := test.input.Encode()
+			assert.Equal(t, test.want, got)
+		})
+	}
 }
