@@ -101,20 +101,20 @@ func TestListParams_Encode(t *testing.T) {
 				Limit: 10,
 				Page:  2,
 			},
-			want: "limit=10&page=2&sort=name&where=field%3Dvalue%26where%255Bcolour%255D%255Bequals%255D%3Dyellow",
+			want: "?sort=name&field=value&where%5Bcolour%5D%5Bequals%5D=yellow&limit=10&page=2",
 		},
 		"Only Sort set": {
 			input: ListParams{
 				Sort: "name",
 			},
-			want: "sort=name",
+			want: "?sort=name",
 		},
 		"Only Limit and Page set": {
 			input: ListParams{
 				Limit: 5,
 				Page:  3,
 			},
-			want: "limit=5&page=3",
+			want: "?limit=5&page=3",
 		},
 		"No fields set": {
 			input: ListParams{},

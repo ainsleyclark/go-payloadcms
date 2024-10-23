@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+// QueryBuilder represents the type for building Payload CMS
+// where queries for Find/List routes.
+//
+// See below for more info:
+// https://payloadcms.com/docs/beta/queries/overview
 type QueryBuilder struct {
 	params url.Values
 }
