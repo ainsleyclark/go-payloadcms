@@ -18,6 +18,17 @@ func TestCollectionsService(t *testing.T) {
 		wantURL    string
 		wantMethod string
 	}{
+		"Find": {
+			call: func(s CollectionService) (Response, error) {
+				return s.Find(context.Background(), collection, Params{
+					Sort:  "asc",
+					Limit: 10,
+					Page:  1,
+				}, nil)
+			},
+			wantURL:    "/api/posts",
+			wantMethod: http.MethodGet,
+		},
 		"FindByID": {
 			call: func(s CollectionService) (Response, error) {
 				return s.FindByID(context.Background(), collection, 1, nil)
@@ -34,7 +45,7 @@ func TestCollectionsService(t *testing.T) {
 		},
 		"List": {
 			call: func(s CollectionService) (Response, error) {
-				return s.List(context.Background(), collection, ListParams{
+				return s.List(context.Background(), collection, Params{
 					Sort:  "asc",
 					Limit: 10,
 					Page:  1,
@@ -55,7 +66,7 @@ func TestCollectionsService(t *testing.T) {
 				return s.UpdateByID(context.Background(), collection, 1, defaultResource)
 			},
 			wantURL:    "/api/posts/1",
-			wantMethod: http.MethodPut,
+			wantMethod: http.MethodPatch,
 		},
 		"DeleteByID": {
 			call: func(s CollectionService) (Response, error) {
@@ -85,6 +96,19 @@ func TestCollectionsService(t *testing.T) {
 		})
 	}
 
+	t.Run("Find returns error on QueryValues", func(t *testing.T) {
+		t.Parallel()
+
+		client, teardown := Setup(t, defaultHandler(t))
+		defer teardown()
+		client.queryValues = func(_ any) (url.Values, error) {
+			return nil, errors.New("query error")
+		}
+		client.Collections = CollectionServiceOp{Client: client}
+		_, err := client.Collections.Find(context.Background(), collection, Params{}, nil)
+		AssertError(t, err)
+	})
+
 	t.Run("List returns error on QueryValues", func(t *testing.T) {
 		t.Parallel()
 
@@ -94,7 +118,7 @@ func TestCollectionsService(t *testing.T) {
 			return nil, errors.New("query error")
 		}
 		client.Collections = CollectionServiceOp{Client: client}
-		_, err := client.Collections.List(context.Background(), collection, ListParams{}, nil)
+		_, err := client.Collections.List(context.Background(), collection, Params{}, nil)
 		AssertError(t, err)
 	})
 }
