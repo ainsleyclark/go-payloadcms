@@ -112,7 +112,7 @@ func (s CollectionServiceOp) Create(ctx context.Context, collection Collection, 
 // UpdateByID updates a collection entity by its ID.
 func (s CollectionServiceOp) UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
-	return s.Client.Do(ctx, http.MethodPut, path, in, nil)
+	return s.Client.Do(ctx, http.MethodPatch, path, in, nil)
 }
 
 // DeleteByID deletes a collection entity by its ID.

@@ -249,6 +249,12 @@ func TestClient_Requests(t *testing.T) {
 			},
 			wantMethod: http.MethodPut,
 		},
+		"Patch": {
+			call: func(s *Client) (Response, error) {
+				return s.Patch(context.TODO(), path, nil)
+			},
+			wantMethod: http.MethodPatch,
+		},
 		"Delete": {
 			call: func(s *Client) (Response, error) {
 				return s.Delete(context.TODO(), path, nil)
