@@ -216,6 +216,44 @@ if err != nil {
 }
 ```
 
+#### Queries
+
+The `Params` allows you to add filters, sort order, pagination, and other query parameters. Here's an example:
+
+```go
+import (
+	"context"
+	"fmt"
+	"github.com/ainsleyclark/go-payloadcms"
+)
+
+func main() {
+	client, err := payloadcms.New(
+		payloadcms.WithBaseURL("http://localhost:8080"),
+		payloadcms.WithAPIKey("api-key"),
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var entities payloadcms.ListResponse[Entity]
+	
+	params := payloadcms.ListParams{
+		Sort: "-createdAt",          
+		Limit: 10,                  
+		Page: 1,                     
+		Where: payloadcms.Query().Equals("status", "active").GreaterThan("age", "18"),
+	}
+
+	resp, err := client.Collections.List(context.Background(), "users", params, &entities)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Printf("Received status: %d, with body: %s\n", resp.StatusCode, string(resp.Content))
+}
+```
+
 ## Mocks
 
 Mock implementations can be found in `payloadfakes` package located
