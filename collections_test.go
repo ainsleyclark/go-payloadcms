@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCollectionsService(t *testing.T) {
@@ -81,6 +83,53 @@ func TestCollectionsService(t *testing.T) {
 			resp, err := test.call(&CollectionServiceOp{Client: client})
 			AssertNoError(t, err)
 			AssertEqual(t, string(resp.Content), string(defaultBody))
+		})
+	}
+}
+
+func TestListParams_Encode(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		input ListParams
+		want  string
+	}{
+		"All fields set": {
+			input: ListParams{
+				Sort:  "name",
+				Where: Query().Equals("colour", "yellow"),
+				Limit: 10,
+				Page:  2,
+			},
+			want: "limit=10&page=2&sort=name&where=field%3Dvalue%26where%255Bcolour%255D%255Bequals%255D%3Dyellow",
+		},
+		"Only Sort set": {
+			input: ListParams{
+				Sort: "name",
+			},
+			want: "sort=name",
+		},
+		"Only Limit and Page set": {
+			input: ListParams{
+				Limit: 5,
+				Page:  3,
+			},
+			want: "limit=5&page=3",
+		},
+		"No fields set": {
+			input: ListParams{},
+			want:  "",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if test.input.Where != nil {
+				test.input.Where.params.Add("field", "value")
+			}
+			got := test.input.Encode()
+			assert.Equal(t, test.want, got)
 		})
 	}
 }

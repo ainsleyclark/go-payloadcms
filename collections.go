@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"sort"
 )
 
 // CollectionService is an interface for interacting with the collection
@@ -95,10 +97,7 @@ func (s CollectionServiceOp) FindBySlug(ctx context.Context, collection Collecti
 
 // List lists all collection entities.
 func (s CollectionServiceOp) List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error) {
-	path := fmt.Sprintf("/api/%s", collection)
-	if params.Where != nil {
-		path = fmt.Sprintf("%s?%s", path, params.Where.Build())
-	}
+	path := fmt.Sprintf("/api/%s?%s", collection, params.Encode())
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
 
@@ -118,4 +117,38 @@ func (s CollectionServiceOp) UpdateByID(ctx context.Context, collection Collecti
 func (s CollectionServiceOp) DeleteByID(ctx context.Context, collection Collection, id int) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
 	return s.Client.Do(ctx, http.MethodDelete, path, nil, nil)
+}
+
+// Encode encodes ListParams into a URL query string.
+func (p ListParams) Encode() string {
+	values := url.Values{}
+
+	if p.Sort != "" {
+		values.Add("sort", p.Sort)
+	}
+	if p.Where != nil {
+		values.Add("where", p.Where.Build())
+	}
+	if p.Limit > 0 {
+		values.Add("limit", fmt.Sprintf("%d", p.Limit))
+	}
+	if p.Page > 0 {
+		values.Add("page", fmt.Sprintf("%d", p.Page))
+	}
+
+	// Sort the keys to produce a consistent output.
+	keys := make([]string, 0, len(values))
+	for k := range values {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	encodedValues := url.Values{}
+	for _, k := range keys {
+		for _, v := range values[k] {
+			encodedValues.Add(k, v)
+		}
+	}
+
+	return encodedValues.Encode()
 }
