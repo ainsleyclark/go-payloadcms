@@ -11,10 +11,9 @@ import (
 //
 // See: https://payloadcms.com/docs/rest-api/overview#collections
 type CollectionService interface {
-	Find(ctx context.Context, collection Collection, params Params, out any) (Response, error)
 	FindByID(ctx context.Context, collection Collection, id int, out any) (Response, error)
 	FindBySlug(ctx context.Context, collection Collection, slug string, out any) (Response, error)
-	List(ctx context.Context, collection Collection, params Params, out any) (Response, error)
+	List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error)
 	Create(ctx context.Context, collection Collection, in any) (Response, error)
 	UpdateByID(ctx context.Context, collection Collection, id int, in any) (Response, error)
 	DeleteByID(ctx context.Context, collection Collection, id int) (Response, error)
@@ -41,12 +40,12 @@ const (
 const AllItems = 0
 
 type (
-	// Params represents additional query parameters for the find endpoint.
-	Params struct {
-		Sort  string         `json:"sort" url:"sort"`   // Sort the returned documents by a specific field.
-		Where map[string]any `json:"where" url:"where"` // Constrain returned documents with a where query.
-		Limit int            `json:"limit" url:"limit"` // Limit the returned documents to a certain number.
-		Page  int            `json:"page" url:"page"`   // Get a specific page of documents.
+	// ListParams represents additional query parameters for the find endpoint.
+	ListParams struct {
+		Sort  string        `json:"sort" url:"sort"`   // Sort the returned documents by a specific field.
+		Where *QueryBuilder `json:"where" url:"where"` // Constrain returned documents with a where query.
+		Limit int           `json:"limit" url:"limit"` // Limit the returned documents to a certain number.
+		Page  int           `json:"page" url:"page"`   // Get a specific page of documents.
 	}
 	// ListResponse represents a list of entities that is sent back
 	// from the Payload CMS.
@@ -79,16 +78,6 @@ type (
 	}
 )
 
-// Find finds a collection entity by parameters.
-func (s CollectionServiceOp) Find(ctx context.Context, collection Collection, params Params, out any) (Response, error) {
-	v, err := s.Client.queryValues(params)
-	if err != nil {
-		return Response{}, err
-	}
-	path := fmt.Sprintf("/api/%s?%s", collection, v.Encode())
-	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
-}
-
 // FindByID finds a collection entity by its ID.
 func (s CollectionServiceOp) FindByID(ctx context.Context, collection Collection, id int, out any) (Response, error) {
 	path := fmt.Sprintf("/api/%s/%d", collection, id)
@@ -105,12 +94,11 @@ func (s CollectionServiceOp) FindBySlug(ctx context.Context, collection Collecti
 }
 
 // List lists all collection entities.
-func (s CollectionServiceOp) List(ctx context.Context, collection Collection, params Params, out any) (Response, error) {
-	v, err := s.Client.queryValues(params)
-	if err != nil {
-		return Response{}, err
+func (s CollectionServiceOp) List(ctx context.Context, collection Collection, params ListParams, out any) (Response, error) {
+	path := fmt.Sprintf("/api/%s", collection)
+	if params.Where != nil {
+		path = fmt.Sprintf("%s?%s", path, params.Where.Build())
 	}
-	path := fmt.Sprintf("/api/%s?%s", collection, v.Encode())
 	return s.Client.Do(ctx, http.MethodGet, path, nil, out)
 }
 

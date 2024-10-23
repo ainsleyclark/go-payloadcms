@@ -24,7 +24,7 @@ func PayloadCMS() {
 	}
 
 	var users payloadcms.ListResponse[User]
-	resp, err := client.Collections.List(context.Background(), "users", payloadcms.Params{
+	resp, err := client.Collections.List(context.Background(), "users", payloadcms.ListParams{
 		Sort:  "-createdAt",
 		Limit: 10,
 		Page:  1,

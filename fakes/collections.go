@@ -10,7 +10,7 @@ import (
 type MockCollectionService struct {
 	FindByIDFunc   func(ctx context.Context, collection payloadcms.Collection, id int, out any) (payloadcms.Response, error)
 	FindBySlugFunc func(ctx context.Context, collection payloadcms.Collection, slug string, out any) (payloadcms.Response, error)
-	ListFunc       func(ctx context.Context, collection payloadcms.Collection, params payloadcms.Params, out any) (payloadcms.Response, error)
+	ListFunc       func(ctx context.Context, collection payloadcms.Collection, params payloadcms.ListParams, out any) (payloadcms.Response, error)
 	CreateFunc     func(ctx context.Context, collection payloadcms.Collection, in any) (payloadcms.Response, error)
 	UpdateByIDFunc func(ctx context.Context, collection payloadcms.Collection, id int, in any) (payloadcms.Response, error)
 	DeleteByIDFunc func(ctx context.Context, collection payloadcms.Collection, id int) (payloadcms.Response, error)
@@ -25,7 +25,7 @@ func NewMockCollectionService() *MockCollectionService {
 		FindBySlugFunc: func(_ context.Context, _ payloadcms.Collection, _ string, _ any) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
-		ListFunc: func(_ context.Context, _ payloadcms.Collection, _ payloadcms.Params, _ any) (payloadcms.Response, error) {
+		ListFunc: func(_ context.Context, _ payloadcms.Collection, _ payloadcms.ListParams, _ any) (payloadcms.Response, error) {
 			return payloadcms.Response{}, nil
 		},
 		CreateFunc: func(_ context.Context, _ payloadcms.Collection, _ any) (payloadcms.Response, error) {
@@ -51,7 +51,7 @@ func (m *MockCollectionService) FindBySlug(ctx context.Context, collection paylo
 }
 
 // List calls the mock implementation.
-func (m *MockCollectionService) List(ctx context.Context, collection payloadcms.Collection, params payloadcms.Params, out any) (payloadcms.Response, error) {
+func (m *MockCollectionService) List(ctx context.Context, collection payloadcms.Collection, params payloadcms.ListParams, out any) (payloadcms.Response, error) {
 	return m.ListFunc(ctx, collection, params, out)
 }
 
