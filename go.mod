@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/gabriel-vasile/mimetype v1.4.6
 	github.com/google/go-querystring v1.1.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
