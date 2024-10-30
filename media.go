@@ -34,7 +34,7 @@ type MediaServiceOp struct {
 // MediaOptions represents non-required options for uploading media.
 type MediaOptions struct {
 	// The collection to upload the media to, defaults to "media"
-	Collection string
+	Collection Collection
 	// Required filename for the upload, you do not need to pass the
 	// extension here.
 	// Note, this will not change the file extension.
