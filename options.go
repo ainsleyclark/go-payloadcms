@@ -34,30 +34,24 @@ func WithAPIKey(apiKey string) ClientOption {
 	}
 }
 
-// requestOptions defines optional parameters for API requests.
-type requestOptions struct {
-	params map[string]string
-}
-
 // RequestOption is a functional option type used to configure request options.
-type RequestOption func(*requestOptions)
+type RequestOption func(*http.Request)
 
 // WithDepth sets the depth level for API responses.
 // Depth determines how much nested data is included in the response.
 //
 // See: https://payloadcms.com/docs/queries/depth
 func WithDepth(depth int) RequestOption {
-	return func(c *requestOptions) {
-		WithQueryParam("depth", strconv.Itoa(depth))(c)
+	return func(r *http.Request) {
+		WithQueryParam("depth", strconv.Itoa(depth))(r)
 	}
 }
 
 // WithQueryParam adds a query parameter to the API request.
 func WithQueryParam(key, val string) RequestOption {
-	return func(c *requestOptions) {
-		if c.params == nil {
-			c.params = make(map[string]string)
-		}
-		c.params[key] = val
+	return func(r *http.Request) {
+		q := r.URL.Query()          // Get a copy of the query values
+		q.Add(key, val)             // Modify the copy
+		r.URL.RawQuery = q.Encode() // Set the modified query back to the request
 	}
 }

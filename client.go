@@ -146,6 +146,10 @@ func (c *Client) Do(ctx context.Context, method, path string, body any, v any, o
 		return defR, err
 	}
 
+	for _, opt := range opts {
+		opt(req)
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "users API-Key "+c.apiKey)
 
@@ -210,11 +214,9 @@ func (c *Client) Delete(ctx context.Context, path string, v any, opts ...Request
 	return c.Do(ctx, http.MethodDelete, path, nil, v, opts...)
 }
 
-// NewRequest creates an API request. A relative URL can be provided in urlStr, which will
-// be resolved to the BaseURL of the Client. Relative URLS should always be
-// specified without a preceding slash. If specified, the value pointed to by
-// body is JSON encoded and included as the request body.
-// TODO: Clean up these comments.
+// NewRequest creates a new Payload API request by using the API
+// Key within the client. A method, path and body is attached to
+// the request.
 func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
 	uri := fmt.Sprintf("%s/%s", c.baseURL, strings.TrimPrefix(path, "/"))
 	req, err := http.NewRequestWithContext(ctx, method, uri, body)
