@@ -126,7 +126,7 @@ func (e Errors) Error() string {
 // error if an API error has occurred.
 //
 // Errors occur in the eventuality if the http.StatusCode is not 2xx.
-func (c *Client) Do(ctx context.Context, method, path string, body any, v any) (Response, error) {
+func (c *Client) Do(ctx context.Context, method, path string, body any, v any, opts ...RequestOption) (Response, error) {
 	defR := Response{
 		Response: &http.Response{},
 	}
@@ -164,7 +164,7 @@ func (c *Client) Do(ctx context.Context, method, path string, body any, v any) (
 // DoWithRequest sends an API request using the provided http.Request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c *Client) DoWithRequest(_ context.Context, req *http.Request, v any) (Response, error) {
+func (c *Client) DoWithRequest(_ context.Context, req *http.Request, v any, opts ...RequestOption) (Response, error) {
 	r, err := c.performRequest(req)
 	if err != nil {
 		return r, err
@@ -178,36 +178,36 @@ func (c *Client) DoWithRequest(_ context.Context, req *http.Request, v any) (Res
 // Get sends an HTTP GET request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c *Client) Get(ctx context.Context, path string, v any) (Response, error) {
-	return c.Do(ctx, http.MethodGet, path, nil, v)
+func (c *Client) Get(ctx context.Context, path string, v any, opts ...RequestOption) (Response, error) {
+	return c.Do(ctx, http.MethodGet, path, nil, v, opts...)
 }
 
 // Post sends an HTTP POST request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c *Client) Post(ctx context.Context, path string, in any) (Response, error) {
-	return c.Do(ctx, http.MethodPost, path, in, nil)
+func (c *Client) Post(ctx context.Context, path string, in any, opts ...RequestOption) (Response, error) {
+	return c.Do(ctx, http.MethodPost, path, in, nil, opts...)
 }
 
 // Put sends an HTTP PUT request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c *Client) Put(ctx context.Context, path string, in any) (Response, error) {
-	return c.Do(ctx, http.MethodPut, path, in, nil)
+func (c *Client) Put(ctx context.Context, path string, in any, opts ...RequestOption) (Response, error) {
+	return c.Do(ctx, http.MethodPut, path, in, nil, opts...)
 }
 
 // Patch sends an HTTP PATCH request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c *Client) Patch(ctx context.Context, path string, in any) (Response, error) {
-	return c.Do(ctx, http.MethodPatch, path, in, nil)
+func (c *Client) Patch(ctx context.Context, path string, in any, opts ...RequestOption) (Response, error) {
+	return c.Do(ctx, http.MethodPatch, path, in, nil, opts...)
 }
 
 // Delete sends an HTTP DELETE request and returns the API response.
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
-func (c *Client) Delete(ctx context.Context, path string, v any) (Response, error) {
-	return c.Do(ctx, http.MethodDelete, path, nil, v)
+func (c *Client) Delete(ctx context.Context, path string, v any, opts ...RequestOption) (Response, error) {
+	return c.Do(ctx, http.MethodDelete, path, nil, v, opts...)
 }
 
 // NewRequest creates an API request. A relative URL can be provided in urlStr, which will

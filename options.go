@@ -2,6 +2,7 @@ package payloadcms
 
 import (
 	"net/http"
+	"strconv"
 )
 
 // ClientOption is a functional option type that allows us to configure the Client.
@@ -30,5 +31,33 @@ func WithBaseURL(url string) ClientOption {
 func WithAPIKey(apiKey string) ClientOption {
 	return func(c *Client) {
 		c.apiKey = apiKey
+	}
+}
+
+// requestOptions defines optional parameters for API requests.
+type requestOptions struct {
+	params map[string]string
+}
+
+// RequestOption is a functional option type used to configure request options.
+type RequestOption func(*requestOptions)
+
+// WithDepth sets the depth level for API responses.
+// Depth determines how much nested data is included in the response.
+//
+// See: https://payloadcms.com/docs/queries/depth
+func WithDepth(depth int) RequestOption {
+	return func(c *requestOptions) {
+		WithQueryParam("depth", strconv.Itoa(depth))(c)
+	}
+}
+
+// WithQueryParam adds a query parameter to the API request.
+func WithQueryParam(key, val string) RequestOption {
+	return func(c *requestOptions) {
+		if c.params == nil {
+			c.params = make(map[string]string)
+		}
+		c.params[key] = val
 	}
 }

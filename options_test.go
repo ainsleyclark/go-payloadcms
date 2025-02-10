@@ -5,7 +5,9 @@ import (
 	"testing"
 )
 
-func TestOptions(t *testing.T) {
+func TestClientOptions(t *testing.T) {
+	t.Parallel()
+
 	var (
 		client  = &http.Client{}
 		baseURL = "https://api.payloadcms.com"
@@ -22,4 +24,9 @@ func TestOptions(t *testing.T) {
 	AssertEqual(t, got.client, client)
 	AssertEqual(t, got.baseURL, baseURL)
 	AssertEqual(t, got.apiKey, apiKey)
+}
+
+func TestRequestOptions(t *testing.T) {
+	t.Parallel()
+
 }
