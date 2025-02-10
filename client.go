@@ -146,14 +146,10 @@ func (c *Client) Do(ctx context.Context, method, path string, body any, v any, o
 		return defR, err
 	}
 
-	for _, opt := range opts {
-		opt(req)
-	}
-
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "users API-Key "+c.apiKey)
 
-	r, err := c.performRequest(req)
+	r, err := c.performRequest(req, opts...)
 	if err != nil {
 		return r, err
 	}
@@ -169,7 +165,7 @@ func (c *Client) Do(ctx context.Context, method, path string, body any, v any, o
 // The API response is JSON decoded and stored in the value pointed to by v, or returned
 // as an error if an API error has occurred.
 func (c *Client) DoWithRequest(_ context.Context, req *http.Request, v any, opts ...RequestOption) (Response, error) {
-	r, err := c.performRequest(req)
+	r, err := c.performRequest(req, opts...)
 	if err != nil {
 		return r, err
 	}
@@ -242,7 +238,11 @@ func (c *Client) NewFormRequest(ctx context.Context, method, path string, body i
 	return req, nil
 }
 
-func (c *Client) performRequest(req *http.Request) (Response, error) {
+func (c *Client) performRequest(req *http.Request, opts ...RequestOption) (Response, error) {
+	for _, opt := range opts {
+		opt(req)
+	}
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return Response{Response: &http.Response{}}, err
