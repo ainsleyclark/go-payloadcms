@@ -254,6 +254,37 @@ func main() {
 }
 ```
 
+### Options
+
+The `RequestOption` type is a functional option used to configure HTTP requests sent to the Payload 
+CMS API.
+
+### WithDepth
+
+`WithDepth` specifies the depth level for API responses, determining how much nested data is included.
+See the [Payload Website](https://payloadcms.com/docs/queries/depth) for more details.
+
+**Usage:**
+```go
+client.Do(ctx, http.MethodGet, "/api/posts", nil, &out,
+    WithDepth(10),
+)
+```
+This will append `?depth=10` to the request URL.
+
+### WithQueryParam
+
+`WithQueryParam` adds a key, value query parameters to the API request.
+
+**Usage:**
+```go
+client.Do(ctx, http.MethodGet, "/api/posts", nil, &out,
+    WithQueryParam("category", "tech"),
+)
+```
+
+This will append `?category=tech` to the request URL.
+
 ## Mocks
 
 Mock implementations can be found in `payloadfakes` package located
