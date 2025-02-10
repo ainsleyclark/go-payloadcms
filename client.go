@@ -56,7 +56,7 @@ type Client struct {
 }
 
 // New creates a new Payload CMS client.
-func New(options ...Option) (*Client, error) {
+func New(options ...ClientOption) (*Client, error) {
 	c := &Client{
 		client:      http.DefaultClient,
 		reader:      io.ReadAll,
