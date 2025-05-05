@@ -19,12 +19,12 @@ import (
 //
 // See: https://payloadcms.com/docs/rest-api/overview
 type Service interface {
-	Do(ctx context.Context, method, path string, body any, v any) (Response, error)
-	DoWithRequest(ctx context.Context, req *http.Request, v any) (Response, error)
-	Get(ctx context.Context, path string, v any) (Response, error)
-	Post(ctx context.Context, path string, in any) (Response, error)
-	Put(ctx context.Context, path string, in any) (Response, error)
-	Delete(ctx context.Context, path string, v any) (Response, error)
+	Do(ctx context.Context, method, path string, body any, v any, opts ...RequestOption) (Response, error)
+	DoWithRequest(_ context.Context, req *http.Request, v any, opts ...RequestOption) (Response, error)
+	Get(ctx context.Context, path string, v any, opts ...RequestOption) (Response, error)
+	Post(ctx context.Context, path string, in any, opts ...RequestOption) (Response, error)
+	Put(ctx context.Context, path string, in any, opts ...RequestOption) (Response, error)
+	Delete(ctx context.Context, path string, v any, opts ...RequestOption) (Response, error)
 }
 
 // Client represents a Payload CMS client.
@@ -54,6 +54,8 @@ type Client struct {
 	reader      func(io.Reader) ([]byte, error)
 	queryValues func(v any) (url.Values, error)
 }
+
+var _ Service = (*Client)(nil)
 
 // New creates a new Payload CMS client.
 func New(options ...ClientOption) (*Client, error) {
