@@ -20,7 +20,7 @@ func TestCollectionsService(t *testing.T) {
 	}{
 		"FindByID": {
 			call: func(s CollectionService) (Response, error) {
-				return s.FindByID(context.Background(), collection, 1, nil)
+				return s.FindByID(context.Background(), collection, "1", nil)
 			},
 			wantURL:    "/api/posts/1",
 			wantMethod: http.MethodGet,
@@ -53,14 +53,14 @@ func TestCollectionsService(t *testing.T) {
 		},
 		"UpdateByID": {
 			call: func(s CollectionService) (Response, error) {
-				return s.UpdateByID(context.Background(), collection, 1, defaultResource)
+				return s.UpdateByID(context.Background(), collection, "1", defaultResource)
 			},
 			wantURL:    "/api/posts/1",
 			wantMethod: http.MethodPatch,
 		},
 		"DeleteByID": {
 			call: func(s CollectionService) (Response, error) {
-				return s.DeleteByID(context.Background(), collection, 1)
+				return s.DeleteByID(context.Background(), collection, "1")
 			},
 			wantURL:    "/api/posts/1",
 			wantMethod: http.MethodDelete,

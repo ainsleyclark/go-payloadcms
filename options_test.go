@@ -44,7 +44,7 @@ func TestRequestOptions(t *testing.T) {
 	t.Run("Collections", func(t *testing.T) {
 		col := &CollectionServiceOp{Client: client}
 
-		_, err := col.FindByID(context.TODO(), "posts", 1, nil,
+		_, err := col.FindByID(context.TODO(), "posts", "1", nil,
 			WithDepth(10),
 			WithQueryParam("key", "value"),
 		)
