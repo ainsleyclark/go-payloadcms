@@ -25,6 +25,13 @@ func TestCollectionsService(t *testing.T) {
 			wantURL:    "/api/posts/1",
 			wantMethod: http.MethodGet,
 		},
+		"FindByStrID": {
+			call: func(s CollectionService) (Response, error) {
+				return s.FindByStrID(context.Background(), collection, "1", nil)
+			},
+			wantURL:    "/api/posts/1",
+			wantMethod: http.MethodGet,
+		},
 		"FindBySlug": {
 			call: func(s CollectionService) (Response, error) {
 				return s.FindBySlug(context.Background(), collection, "slug", nil)
@@ -58,9 +65,23 @@ func TestCollectionsService(t *testing.T) {
 			wantURL:    "/api/posts/1",
 			wantMethod: http.MethodPatch,
 		},
+		"UpdateByStrID": {
+			call: func(s CollectionService) (Response, error) {
+				return s.UpdateByStrID(context.Background(), collection, "1", defaultResource)
+			},
+			wantURL:    "/api/posts/1",
+			wantMethod: http.MethodPatch,
+		},
 		"DeleteByID": {
 			call: func(s CollectionService) (Response, error) {
 				return s.DeleteByID(context.Background(), collection, 1)
+			},
+			wantURL:    "/api/posts/1",
+			wantMethod: http.MethodDelete,
+		},
+		"DeleteByStrID": {
+			call: func(s CollectionService) (Response, error) {
+				return s.DeleteByStrID(context.Background(), collection, "1")
 			},
 			wantURL:    "/api/posts/1",
 			wantMethod: http.MethodDelete,
